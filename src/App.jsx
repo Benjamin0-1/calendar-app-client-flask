@@ -7,6 +7,10 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { SideBar } from './components/SideBar';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Profile from './pages/Profile/Profile';
+import Login from './pages/Login/Login';
+import Home from './pages/home/Home';
+import AllProperties from './pages/Profile/AllProperties';
 
 function App() {
   const [theme, setTheme] = useState('light'); // 'light' or 'dark', light by default.
@@ -43,8 +47,11 @@ function App() {
         </div>
 
         <Routes>
-          <Route path="/home" element={<h1>home</h1>} />
+          <Route path="/home" element={< Home/>} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/properties" element={<AllProperties />} />
           <Route path="*" element={<h1>Not found</h1>} />
         </Routes>
       </Container>

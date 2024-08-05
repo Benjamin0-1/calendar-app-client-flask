@@ -46,8 +46,8 @@ function Signup() {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    first_name: data.firstName,
-                    last_name: data.lastName,
+                    firstName: data.firstName,
+                    lastName: data.lastName,
                     email: data.email,
                     password: data.password
                 }),
@@ -182,7 +182,7 @@ function Signup() {
                     </Button>
                 </Box>
             </Box>
-            <ToastContainer /> {/* Include ToastContainer */}
+            <ToastContainer /> 
         </Container>
     );
 }

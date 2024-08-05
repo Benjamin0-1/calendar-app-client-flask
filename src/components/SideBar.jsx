@@ -6,6 +6,7 @@ import MailIcon from '@mui/icons-material/Mail';
 import MenuIcon from '@mui/icons-material/Menu';
 import ProfileIcon from '@mui/icons-material/AccountCircle';
 import CloseIcon from '@mui/icons-material/Close'; // Import CloseIcon
+import SettingsIcon from '@mui/icons-material/Settings';
 import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
@@ -88,6 +89,12 @@ const SideBar = () => {
                             <ProfileIcon />
                         </ListItemIcon>
                         <ListItemText primary="Profile" />
+                    </ListItem>
+                    <ListItem button component={Link} to="/settings">
+                        <ListItemIcon>
+                            <SettingsIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Settings" />
                     </ListItem>
                 </List>
             </Drawer>
