@@ -31,10 +31,18 @@ function Login() {
             const data = await response.json();
 
             if (response.ok) {
-                localStorage.setItem("accessToken", data.access_token); 
+                const currentTime = new Date().getTime();
+                const accessTokenExpiresInMs = parseInt(data.access_token_expires_in) * 60 * 1000; // accessToken is in minutes.
+                const refreshTokenExpiresInMs = parseInt(data.refresh_token_expires_in) * 24 * 60 * 60 * 1000; // while refreshToken is in days.
+                // this will allow FetchWithAuth to work properly along with the HOC withAuth.
+    
+                localStorage.setItem("accessToken", data.access_token);
                 localStorage.setItem("refreshToken", data.refresh_token);
+                localStorage.setItem("accessTokenExpiration", currentTime + accessTokenExpiresInMs);
+                localStorage.setItem("refreshTokenExpiration", currentTime + refreshTokenExpiresInMs);
+    
                 toast.success("Logged in successfully");
-                //navigate("/profile"); // Use navigate to redirect
+                navigate("/profile"); // Use navigate to redirect
                 return;
             }
 
