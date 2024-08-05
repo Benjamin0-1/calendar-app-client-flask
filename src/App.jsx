@@ -11,6 +11,9 @@ import Profile from './pages/Profile/Profile';
 import Login from './pages/Login/Login';
 import Home from './pages/home/Home';
 import AllProperties from './pages/Profile/AllProperties';
+import UpdateInfo from './pages/Profile/UpdateInfo';
+import UpdatePassword from './pages/Profile/UpdatePassword';
+import EmailNotConfirmed from './pages/EmailNotConfirmed/EmailNotConfirmed';
 
 function App() {
   const [theme, setTheme] = useState('light'); // 'light' or 'dark', light by default.
@@ -51,7 +54,10 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/update-info" element={<UpdateInfo />} />
           <Route path="/properties" element={<AllProperties />} />
+          <Route path="/emailnotconfirmed" element={<EmailNotConfirmed />} />
+          <Route path="/profile/change-password" element={<UpdatePassword />} />
           <Route path="*" element={<h1>Not found</h1>} />
         </Routes>
       </Container>

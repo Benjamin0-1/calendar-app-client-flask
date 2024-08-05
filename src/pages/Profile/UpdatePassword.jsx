@@ -3,93 +3,111 @@ import { Typography, Container, Grid, Box, TextField, Button, CircularProgress, 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import FetchWithAuth from "../../utils/FetchWithAuthentication";
+import { useNavigate } from "react-router-dom";
 import withAuth from "../../utils/ifNotLoggedIn";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-function UpdateInfo() {
+function UpdatePassword() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [userData, setUserData] = useState({
-        firstName: "",
-        lastName: "",
+    const [formData, setFormData] = useState({
+        currentPassword: "",
+        newPassword: "",
+        confirmNewPassword: ""
     });
+
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setUserData(prevData => ({
+        setFormData(prevData => ({
             ...prevData,
             [name]: value
         }));
     };
 
-    
-    const handleUpdateInfo = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            const response = await FetchWithAuth(`${API_URL}/auth/update-profile`, {
-                method: "PATCH",
+            const response = await FetchWithAuth(`${API_URL}/auth/update-password`, {
+                method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify(userData),
+                body: JSON.stringify(formData),
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                toast.success("User info updated successfully");
-                return
+                toast.success("Password updated successfully");
+                return;
             };
 
             if (data.emailNotConfirmed) {
                 toast.error("Email not confirmed");
-                // this must redirect to emailnotconfirmed page.
+                navigate("/emailnotconfirmed");
                 return;
             };
 
             if (data.error) {
                 toast.error(data.error);
-                return
+                return;
             };
 
         } catch (err) {
-            toast.error("Failed to update user info");
-            console.log(`Error updating user info: ${err}`);
+            toast.error("Failed to update password");
+            console.log(`Error updating password: ${err}`);
         } finally {
             setIsLoading(false);
-        };
+        }
     };
 
-    // must be responsive.
     return (
         <div style={{ minHeight: '100vh', padding: '20px' }}>
             <Container maxWidth="sm">
                 <Paper elevation={3} style={{ padding: '20px', marginTop: '20px' }}>
                     <Typography variant="h4" align="center" gutterBottom>
-                        Update Profile
+                        Update Password
                     </Typography>
-                    <form onSubmit={handleUpdateInfo}>
+                    <form onSubmit={handleSubmit}>
                         <Grid container spacing={2}>
                             <Grid item xs={12}>
                                 <TextField
-                                    label="First Name"
+                                    label="Current Password"
+                                    type="password"
                                     variant="outlined"
                                     fullWidth
-                                    name="firstName"
-                                    value={userData.firstName}
+                                    name="currentPassword"
+                                    value={formData.currentPassword}
                                     onChange={handleChange}
+                                    required
                                 />
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
-                                    label="Last Name"
+                                    label="New Password"
+                                    type="password"
                                     variant="outlined"
                                     fullWidth
-                                    name="lastName"
-                                    value={userData.lastName}
+                                    name="newPassword"
+                                    value={formData.newPassword}
                                     onChange={handleChange}
+                                    required
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="Confirm New Password"
+                                    type="password"
+                                    variant="outlined"
+                                    fullWidth
+                                    name="confirmNewPassword"
+                                    value={formData.confirmNewPassword}
+                                    onChange={handleChange}
+                                    required
                                 />
                             </Grid>
                             <Grid item xs={12} style={{ textAlign: 'center' }}>
@@ -99,7 +117,7 @@ function UpdateInfo() {
                                     color="primary"
                                     disabled={isLoading}
                                 >
-                                    {isLoading ? <CircularProgress size={24} /> : "Update"}
+                                    {isLoading ? <CircularProgress size={24} /> : "Update Password"}
                                 </Button>
                             </Grid>
                         </Grid>
@@ -111,4 +129,4 @@ function UpdateInfo() {
     );
 }
 
-export default withAuth(UpdateInfo);
+export default withAuth(UpdatePassword);
