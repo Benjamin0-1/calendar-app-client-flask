@@ -100,6 +100,11 @@ function DeletedDate() {
         }
     };
 
+    // a button below each deleted date to delete it
+    // a dialog to confirm the deletion of a single deleted date.
+    // will only show up if there are deleted dates.
+    const handleDelteDeletedBookings = async (id) => {};
+
     return (
         <Container>
             <Typography variant="h4" gutterBottom>

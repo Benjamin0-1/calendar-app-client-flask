@@ -2,7 +2,9 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 const refreshToken = localStorage.getItem('refreshToken');
 
-// Function to convert days to milliseconds
+
+const minutesToMilliseconds = (minutes) => minutes * 60 * 1000; // convert milliseconds to minutes
+
 const daysToMilliseconds = (days) => days * 24 * 60 * 60 * 1000;
 
 // Refresh the access token
@@ -17,7 +19,7 @@ async function refreshAccessToken() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ refresh_token: refreshToken })
+            body: JSON.stringify({ refreshToken }),
         });
 
         if (!response.ok) {
@@ -26,26 +28,28 @@ async function refreshAccessToken() {
 
         const data = await response.json();
 
-        // Save new access token and its expiration time
-        localStorage.setItem('accessToken', data.access_token);
-        localStorage.setItem('accessTokenExpiration', Date.now() + parseInt(data.access_token_expires_in) * 60 * 1000); // Convert minutes to milliseconds
+   
+        const { access_token, expires_in } = data;
 
-        // Save refresh token expiration time
-        localStorage.setItem('refreshTokenExpiration', Date.now() + daysToMilliseconds(parseInt(data.refresh_token_expires_in)));
+        const expiresInMilliseconds = minutesToMilliseconds(parseInt(expires_in, 10));
+
+        localStorage.setItem('accessToken', access_token);
+        localStorage.setItem('accessTokenExpiration', Date.now() + expiresInMilliseconds); 
     } catch (error) {
         console.error('Error refreshing access token:', error);
-        // Handle token refresh errors (e.g., redirect to login if necessary)
-    }
+
+    };
 };
 
-// Fetch with authentication
+
 async function FetchWithAuth(url, options) {
     let accessToken = localStorage.getItem('accessToken');
-    const tokenExpiration = localStorage.getItem('accessTokenExpiration');
-    const refreshTokenExpiration = localStorage.getItem('refreshTokenExpiration');
-    const currentTime = new Date().getTime();
+    const tokenExpiration = parseInt(localStorage.getItem('accessTokenExpiration'), 10);
+    const refreshTokenExpiration = parseInt(localStorage.getItem('refreshTokenExpiration'), 10);
+    const currentTime = Date.now();
 
     try {
+        // Check if access token is expired
         if (!accessToken || currentTime > tokenExpiration) {
             // Check if refresh token is valid and refresh access token if needed
             if (refreshToken && currentTime < refreshTokenExpiration) {
@@ -62,9 +66,10 @@ async function FetchWithAuth(url, options) {
             headers: {
                 ...options.headers,
                 Authorization: `Bearer ${accessToken}`,
-            }
+            },
         });
 
+        // If response status is 401, try to refresh the token and retry
         if (response.status === 401) {
             await refreshAccessToken(); // Try refreshing the token if 401 error occurs
             accessToken = localStorage.getItem('accessToken'); // Update accessToken after refreshing
@@ -76,9 +81,11 @@ async function FetchWithAuth(url, options) {
         console.error('Error fetching with authentication:', error);
         throw new Error('Failed to fetch with authentication');
     }
-};
+}
 
 export default FetchWithAuth;
+
+
 
 // instead of using 2 separate functions, we can combine them into one function that handles both the access token and the refresh token.
 
