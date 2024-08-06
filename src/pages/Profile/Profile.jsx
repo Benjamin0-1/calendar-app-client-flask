@@ -4,7 +4,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import FetchWithAuth from "../../utils/FetchWithAuthentication";
 import { useNavigate } from "react-router-dom";
-import withAuth from "../../utils/ifNotLoggedIn";
+//import withAuth from "../../utils/ifNotLoggedIn";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -94,5 +94,5 @@ function Profile() {
         </div>
     );
 }
-
-export default withAuth(Profile);
+//export default withAuth(Profile);
+export default Profile;

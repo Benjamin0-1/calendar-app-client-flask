@@ -3,7 +3,7 @@ import { Typography, Container, Grid, Box, CircularProgress, Card, CardContent }
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import FetchWithAuth from "../../utils/FetchWithAuthentication";
-import withAuth from "../../utils/ifNotLoggedIn";
+import { useNavigate } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -14,6 +14,25 @@ function Home() {
     const [responseData, setResponseData] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const navigate = useNavigate(); // Initialize navigate
+
+
+    
+    useEffect(() => {
+        const refreshTokenExpiration = localStorage.getItem('refreshTokenExpiration');
+
+        if (!refreshTokenExpiration || isTokenExpired(refreshTokenExpiration)) {
+            // Refresh token is invalid or expired, redirect to login
+            navigate("/login");
+        }
+    }, [navigate]);
+
+    const isTokenExpired = (expiration) => {
+    const currentTime = Date.now();
+    const expirationTime = new Date(expiration).getTime();
+    return currentTime > expirationTime;
+};
+
 
     const handleFetch = async () => {
         setIsLoading(true);
@@ -129,4 +148,5 @@ function Home() {
     );
 };
 
-export default withAuth(Home);
+//export default withAuth(Home);
+export default Home;

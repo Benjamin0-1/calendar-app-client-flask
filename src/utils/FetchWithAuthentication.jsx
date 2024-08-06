@@ -36,7 +36,7 @@ async function refreshAccessToken() {
         console.error('Error refreshing access token:', error);
         // Handle token refresh errors (e.g., redirect to login if necessary)
     }
-}
+};
 
 // Fetch with authentication
 async function FetchWithAuth(url, options) {
@@ -79,3 +79,21 @@ async function FetchWithAuth(url, options) {
 };
 
 export default FetchWithAuth;
+
+// instead of using 2 separate functions, we can combine them into one function that handles both the access token and the refresh token.
+
+/**
+ * Can simply use this inside of every component that needs to be protected.
+ *     useEffect(() => {
+        refreshToken = localStorage.getItem('refreshToken');
+        refreshTokenExpiration = localStorage.getItem('refreshTokenExpiration');
+        if (!refreshToken {
+            navigate("/login");
+        }
+        if (new Date().getTime() > refreshTokenExpiration) {
+            navigate("/login");
+        }
+    }, [refreshToken, refreshTokenExpiration]);
+    // if the refreshToken is invalid or expired, the user will be redirected to the login page.
+    // otherwise the access token will be refreshed and the user will be able to access the page.
+ */

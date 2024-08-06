@@ -14,6 +14,9 @@ import AllProperties from './pages/Profile/AllProperties';
 import UpdateInfo from './pages/Profile/UpdateInfo';
 import UpdatePassword from './pages/Profile/UpdatePassword';
 import EmailNotConfirmed from './pages/EmailNotConfirmed/EmailNotConfirmed';
+import LoginHistory from './pages/UserSettings/LoginHistory';
+import Settings from './pages/UserSettings/Settings';
+import DeletedDate from './pages/UserSettings/DeletedDates';
 
 function App() {
   const [theme, setTheme] = useState('light'); // 'light' or 'dark', light by default.
@@ -58,6 +61,9 @@ function App() {
           <Route path="/properties" element={<AllProperties />} />
           <Route path="/emailnotconfirmed" element={<EmailNotConfirmed />} />
           <Route path="/profile/change-password" element={<UpdatePassword />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/settings/login-history" element={<LoginHistory />} />
+          <Route path="/settings/view-deleted-bookings" element={<DeletedDate />} />
           <Route path="*" element={<h1>Not found</h1>} />
         </Routes>
       </Container>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FetchWithAuth from "./FetchWithAuthentication";
 
+
 // this function works along the FetchWithAuthentication one.
 // together, they are able to provide a seamless experience for the user.
 // they cover all scenarios, from the user not being logged in, to the access token expiring, to the refresh token expiring.
@@ -30,32 +31,24 @@ export default function withAuth(Component) {
 
                 if (currentTime > refreshTokenExpiration) {
                     // Refresh token expired, redirect to login
+                    localStorage.removeItem('accessToken'); // Remove tokens
                     setIsAuthenticated(false);
                     navigate("/login");
                     return;
                 }
 
-                // Check access token validity
-                if (currentTime > accessTokenExpiration) {
-                    // Attempt to refresh the access token
+                if (currentTime < accessTokenExpiration) {
+                    // Access token is still valid
+                    setIsAuthenticated(true);
+                } else {
+                    // Access token expired, refresh it
                     try {
                         await refreshAccessToken();
-                        const newAccessToken = localStorage.getItem('accessToken');
-                        const newAccessTokenExpiration = localStorage.getItem('accessTokenExpiration');
-
-                        if (newAccessToken && newAccessTokenExpiration && currentTime < newAccessTokenExpiration) {
-                            setIsAuthenticated(true); // Token refreshed successfully
-                            return;
-                        }
+                        setIsAuthenticated(true);
                     } catch (error) {
-                        console.error('Error during token refresh:', error);
+                        setIsAuthenticated(false);
+                        navigate("/login");
                     }
-
-                    // Refresh token failed or expired, redirect to login
-                    setIsAuthenticated(false);
-                    navigate("/login");
-                } else {
-                    setIsAuthenticated(true); // Token is still valid
                 }
             };
 
@@ -68,4 +61,26 @@ export default function withAuth(Component) {
 
         return isAuthenticated ? <Component {...props} /> : null;
     };
-}
+};
+
+// instead of using this to keep the user from accesssing a page,
+// I can now simply check the refreshToken expiracy inside of the components to be protected.
+
+/**useEffect(() => {
+        const refreshTokenExpiration = localStorage.getItem('refreshTokenExpiration');
+
+        if (!refreshTokenExpiration || isTokenExpired(refreshTokenExpiration)) {
+            // Refresh token is invalid or expired, redirect to login
+            navigate("/login");
+        }
+    }, [navigate]);
+
+    const isTokenExpired = (expiration) => {
+    const currentTime = Date.now();
+    const expirationTime = new Date(expiration).getTime();
+    return currentTime > expirationTime;
+};
+
+// NO need to convert to days, because that's already done at login time, and when it is refreshed.
+
+ */
