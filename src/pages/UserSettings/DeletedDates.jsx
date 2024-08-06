@@ -10,7 +10,9 @@ const API_URL = import.meta.env.VITE_API_URL;
 function DeletedDate() {
     const [deletedDates, setDeletedDates] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [openDialog, setOpenDialog] = useState(false); // State to control dialog visibility
+    const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false); // State to control 'delete all' dialog visibility
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false); // State to control 'delete specific' dialog visibility
+    const [dateIdToDelete, setDateIdToDelete] = useState(null); // State to hold the ID of the date to delete
     const navigate = useNavigate();
 
     const handleFetchDeletedDates = async () => {
@@ -33,7 +35,7 @@ function DeletedDate() {
             const data = await response.json();
 
             if (response.status === 404) {
-                return
+                return;
             }
 
             console.log('Fetched data:', data); // Log the entire data object
@@ -48,7 +50,7 @@ function DeletedDate() {
             }
 
         } catch (err) {
-            //toast.error('Error fetching deleted dates');
+            toast.error('Error fetching deleted dates');
             console.log(`Error fetching deleted dates: ${err}`);
         } finally {
             setIsLoading(false);
@@ -61,7 +63,7 @@ function DeletedDate() {
 
     const handleDeleteAllDeletedDates = async () => {
         setIsLoading(true);
-        setOpenDialog(false); // Close dialog after confirmation
+        setShowDeleteAllDialog(false); // Close dialog after confirmation
 
         try {
             const response = await FetchWithAuth(`${API_URL}/bookings/delete-all-deleted-bookings`, {
@@ -70,24 +72,18 @@ function DeletedDate() {
                     'Content-Type': 'application/json'
                 }
             });
-            
-            const data = await response.json();
 
-            
+            const data = await response.json();
 
             if (response.ok) {
                 toast.success("All deleted dates deleted successfully", {
                     autoClose: 3000 // Duration in milliseconds (half of the default 5000ms)
                 });
                 setDeletedDates([]);
-                return;
-            }
-
-            if (data.error) {
+            } else if (data.error) {
                 toast.error(data.error, {
                     autoClose: 3000 // Duration in milliseconds (half of the default 5000ms)
                 });
-                return;
             }
 
         } catch (error) {
@@ -100,10 +96,45 @@ function DeletedDate() {
         }
     };
 
-    // a button below each deleted date to delete it
-    // a dialog to confirm the deletion of a single deleted date.
-    // will only show up if there are deleted dates.
-    const handleDelteDeletedBookings = async (id) => {};
+    const handleDeleteBookingById = async () => {
+        setIsLoading(true);
+        try {
+            const response = await FetchWithAuth(`${API_URL}/bookings/delete-deleted-booking/${dateIdToDelete}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                toast.success("Deleted date deleted successfully", {
+                    autoClose: 3000 // Duration in milliseconds (half of the default 5000ms)
+                });
+                setDeletedDates(deletedDates.filter((date) => date.id !== dateIdToDelete)); // Remove the deleted date from the list
+                setDateIdToDelete(null);
+                setShowDeleteDialog(false); // Close dialog after confirmation
+            } else if (data.error) {
+                toast.error(data.error, {
+                    autoClose: 3000 // Duration in milliseconds (half of the default 5000ms)
+                });
+            }
+
+        } catch (error) {
+            toast.error('Error deleting deleted date', {
+                autoClose: 3000 // Duration in milliseconds (half of the default 5000ms)
+            });
+            console.log(`Error deleting deleted date: ${error}`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const openDeleteDialog = (id) => {
+        setDateIdToDelete(id);
+        setShowDeleteDialog(true);
+    };
 
     return (
         <Container>
@@ -115,7 +146,7 @@ function DeletedDate() {
                 <Button
                     variant="contained"
                     color="secondary"
-                    onClick={() => setOpenDialog(true)}
+                    onClick={() => setShowDeleteAllDialog(true)}
                     style={{ marginBottom: '20px' }}
                 >
                     Delete All Deleted Dates
@@ -148,26 +179,52 @@ function DeletedDate() {
                                 <Typography variant="h6">Customer: {date.customerName}</Typography>
                                 <Typography color="textSecondary">Date: {date.date}</Typography>
                                 <Typography variant="body2">Property: {date.propertyName}</Typography>
+                                <Button
+                                    variant="contained"
+                                    color="error"
+                                    onClick={() => openDeleteDialog(date.id)}
+                                    style={{ marginTop: '10px' }}
+                                >
+                                    Delete
+                                </Button>
                             </Box>
                         </Grid>
                     ))}
                 </Grid>
             )}
             <Dialog
-                open={openDialog}
-                onClose={() => setOpenDialog(false)}
+                open={showDeleteDialog}
+                onClose={() => setShowDeleteDialog(false)}
                 aria-labelledby="delete-dialog-title"
             >
-                <DialogTitle id="delete-dialog-title">Delete All Deleted Dates</DialogTitle>
+                <DialogTitle id="delete-dialog-title">Delete Booking</DialogTitle>
+                <DialogContent>
+                    <Typography>Are you sure you want to delete this booking? This action cannot be undone.</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setShowDeleteDialog(false)} color="primary">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleDeleteBookingById} color="secondary">
+                        Delete
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog
+                open={showDeleteAllDialog}
+                onClose={() => setShowDeleteAllDialog(false)}
+                aria-labelledby="delete-all-dialog-title"
+            >
+                <DialogTitle id="delete-all-dialog-title">Delete All Deleted Dates</DialogTitle>
                 <DialogContent>
                     <Typography>Are you sure you want to delete all deleted dates? This action cannot be undone.</Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setOpenDialog(false)} color="primary">
+                    <Button onClick={() => setShowDeleteAllDialog(false)} color="primary">
                         Cancel
                     </Button>
                     <Button onClick={handleDeleteAllDeletedDates} color="secondary">
-                        Delete
+                        Delete All
                     </Button>
                 </DialogActions>
             </Dialog>
