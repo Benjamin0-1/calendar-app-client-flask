@@ -17,10 +17,33 @@ import EmailNotConfirmed from './pages/EmailNotConfirmed/EmailNotConfirmed';
 import LoginHistory from './pages/UserSettings/LoginHistory';
 import Settings from './pages/UserSettings/Settings';
 import DeletedDate from './pages/UserSettings/DeletedDates';
+import Detail from './pages/Detail/Detail';
+import CreateProperty from './pages/CreateProperty/CreateProperty';
+import LogOutButton from './components/LogOutButton';
+import BookDate from './pages/BookDate/BookDate';
 
 function App() {
   const [theme, setTheme] = useState('light'); // 'light' or 'dark', light by default.
   const toggleTheme = useThemeToggle();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // temporary solution to dynamically render the login button.
+  // ideal solution is using the context API.
+  useEffect(() => {
+    const checkLoginStatus = () => {
+      const refreshToken = localStorage.getItem('refreshToken');
+      const refreshTokenExpiration = localStorage.getItem('refreshTokenExpiration');
+      
+      if (refreshToken && refreshTokenExpiration && Date.now() < parseInt(refreshTokenExpiration)) {
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
+      }
+    };
+    
+    checkLoginStatus(); 
+  }, []);
+
 
   useEffect(() => {
     // Detect the current theme and set it
@@ -47,6 +70,7 @@ function App() {
           >
             {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
           </Button>
+          {isLoggedIn && <LogOutButton />} 
         </div>
         <div style={{ position: 'absolute', top: 0, left: 10 }}>
           <SideBar />
@@ -64,6 +88,9 @@ function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/settings/login-history" element={<LoginHistory />} />
           <Route path="/settings/view-deleted-bookings" element={<DeletedDate />} />
+          <Route path="/property-details/:id" element={<Detail />} />
+          <Route path="/create-property" element={<CreateProperty />} />
+    
           <Route path="*" element={<h1>Not found</h1>} />
         </Routes>
       </Container>

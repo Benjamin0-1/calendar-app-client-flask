@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Typography, Container, Grid, Box, CircularProgress, Card, CardContent } from '@mui/material';
+import { Typography, Container, Grid, Box, CircularProgress, Link as MuiLink } from '@mui/material';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import FetchWithAuth from "../../utils/FetchWithAuthentication";
@@ -22,11 +22,12 @@ function Home() {
         const refreshTokenExpiration = localStorage.getItem('refreshTokenExpiration');
 
         if (!refreshTokenExpiration || isTokenExpired(refreshTokenExpiration)) {
-            // Refresh token is invalid or expired, redirect to login
+            // If the refresh token is invalid or expired, redirect to login
             navigate("/login");
         }
     }, [navigate]);
 
+    // put this function inside of /utils
     const isTokenExpired = (expiration) => {
     const currentTime = Date.now();
     const expirationTime = new Date(expiration).getTime();
@@ -94,43 +95,36 @@ function Home() {
                         ) : (
                             Object.keys(responseData).length > 0 ? (
                                 <Grid container spacing={2}>
-                                    {Object.entries(responseData).map(([propertyName, { bookings, id }]) => (
+                                    {Object.entries(responseData).map(([propertyName, { id }]) => (
                                         <Grid item xs={12} sm={6} md={4} key={id}>
-                                            <Card
-                                                style={{
-                                                    padding: 16,
-                                                    marginBottom: 16,
-                                                    transition: 'transform 0.3s, box-shadow 0.3s',
-                                                    borderRadius: 12,
-                                                    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-                                                    backgroundColor: '',
+                                            <Box
+                                                sx={{
+                                                    padding: 2,
+                                                    borderRadius: 8,
+                                                    border: '1px solid #ddd',
+                                                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                                                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                                                     '&:hover': {
-                                                        transform: 'scale(1.05)',
-                                                        boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
-                                                        cursor: 'pointer',
-                                                    },
+                                                        transform: 'scale(1.02)',
+                                                        boxShadow: '0 6px 12px rgba(0,0,0,0.2)',
+                                                    }
                                                 }}
                                             >
-                                                <CardContent>
-                                                    <Typography variant="h5" style={{ marginBottom: 8 }}>
+                                                <MuiLink 
+                                                    component="button" 
+                                                    variant="body1" 
+                                                    onClick={() => navigate(`/property-details/${id}`)}
+                                                    sx={{
+                                                        display: 'block',
+                                                        textDecoration: 'none',
+                                                        color: 'inherit'
+                                                    }}
+                                                >
+                                                    <Typography variant="h6" gutterBottom>
                                                         {propertyName}
                                                     </Typography>
-                                                    {bookings.length > 0 ? (
-                                                        bookings.map((booking, index) => (
-                                                            <Box key={index} marginBottom={1} style={{ borderBottom: '1px solid #ddd', paddingBottom: 8 }}>
-                                                                <Typography variant="body1" style={{ fontWeight: 'bold' }}>
-                                                                    Customer: {booking.customerName}
-                                                                </Typography>
-                                                                <Typography variant="body2" style={{ color: '#666' }}>
-                                                                    Date: {booking.date}
-                                                                </Typography>
-                                                            </Box>
-                                                        ))
-                                                    ) : (
-                                                        <Typography variant="body2" style={{ color: '#888' }}>No bookings for this property.</Typography>
-                                                    )}
-                                                </CardContent>
-                                            </Card>
+                                                </MuiLink>
+                                            </Box>
                                         </Grid>
                                     ))}
                                 </Grid>
