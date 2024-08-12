@@ -1,138 +1,133 @@
-import React, {useState, useEffect} from "react";
-import { Typography, Container, Grid, CircularProgress, Box, Button, 
-    TextField, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import React, { useState, useEffect } from "react";
+import { CircularProgress, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import FetchWithAuth from "../../utils/FetchWithAuthentication";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-function BookDate({open, onClose}) {
+function BookDate({ open, onClose, propertyId }) {
     const [form, setForm] = useState({
         propertyId: "",
         customerName: "",
-        date: "", // date format: "YYYY-MM-DD"
+        date: null,
     });
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
+    useEffect(() => {
+        if (propertyId) {
+            setForm((prevForm) => ({
+                ...prevForm,
+                propertyId: propertyId,
+            }));
+        }
+    }, [propertyId]);
+
+    const handleInputChange = (event) => {
+        const { name, value } = event.target;
         setForm((prevForm) => ({
             ...prevForm,
-            [name]: value
+            [name]: value,
         }));
     };
 
-    
-    const handleBookDate = async () => {
+    const handleDateChange = (date) => {
+        setForm((prevForm) => ({
+            ...prevForm,
+            date: date,
+        }));
+    };
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
         setIsLoading(true);
-
-        const dateFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
-
-        if (!dateFormatRegex.test(form.date)) { 
-            toast.error("Invalid date format. Please use YYYY-MM-DD.");
-            setIsLoading(false);
-            return;
-        };
 
         try {
             const response = await FetchWithAuth(`${API_URL}/bookings`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(form)
+                body: JSON.stringify({
+                    propertyId: form.propertyId,
+                    customerName: form.customerName,
+                    date: form.date ? form.date.toISOString().split('T')[0] : "",
+                }),
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                toast.success("Booking successful.");
-                setForm({ propertyId: "", customerName: "", date: "" }); 
-                return;
-            };
-
-            if (data.error) {
-                toast.error(data.error);
-                return;
-            };
-
-            if (data.emailNotConfirmed) {
-                toast.error("Email not confirmed");
-                return;
-            };
-            
-        } catch (err) {
-            toast.error("An error occurred while booking the date.");
-            console.error(err);
-            return;       
+                toast.success('Booking created successfully');
+                onClose();
+                location.reload(); // needs to be replaced with a better solution, this is a temporary approach.
+            } else {
+                toast.error(data.error || "Failed to create booking.");
+            }
+        } catch (error) {
+            toast.error("An error occurred while creating the booking.");
         } finally {
             setIsLoading(false);
-        };
+        }
     };
 
-    // this function will fetch the details of the property as the user types in the property name.
-    // it will basically say if the booking is occpied or not as soon 
-    // as the user enters the date.
-    const handleBookingDetails = async (propertyName) => {};
-
     return (
-        <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-            <DialogTitle>Book Date</DialogTitle>
+        <Dialog
+            open={open}
+            onClose={onClose}
+            aria-labelledby="book-date-dialog"
+            maxWidth="md" // Increase the maxWidth to "md" for a bigger dialog
+            fullWidth
+        >
+            <DialogTitle id="book-date-dialog">Book a Date</DialogTitle>
             <DialogContent>
-                <Grid container spacing={2}>
-                    <Grid item xs={12}>
-                        <TextField
-                            fullWidth
-                            label="Property ID"
-                            name="propertyId"
-                            value={form.propertyId}
-                            onChange={handleInputChange}
-                            required
-                        />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <TextField
-                            fullWidth
-                            label="Customer Name"
-                            name="customerName"
-                            value={form.customerName}
-                            onChange={handleInputChange}
-                            required
-                        />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <TextField
-                            fullWidth
-                            label="Date"
-                            name="date"
-                            type="date"
-                            value={form.date}
-                            onChange={handleInputChange}
-                            required
-                            InputLabelProps={{ shrink: true }}
-                        />
-                    </Grid>
-                </Grid>
-                {isLoading && <Box display="flex" justifyContent="center" mt={2}><CircularProgress /></Box>}
+                <form onSubmit={handleSubmit}>
+                    <TextField
+                        fullWidth
+                        margin="normal"
+                        id="propertyId"
+                        name="propertyId"
+                        label="Property ID"
+                        value={form.propertyId}
+                        onChange={handleInputChange}
+                        disabled // disable the input field as it's passed from parent automatically.
+                    />
+                    <TextField
+                        fullWidth
+                        margin="normal"
+                        id="customerName"
+                        name="customerName"
+                        label="Customer Name"
+                        value={form.customerName}
+                        onChange={handleInputChange}
+                    />
+                    <DatePicker
+                        selected={form.date}
+                        
+                        onChange={handleDateChange}
+                        dateFormat="yyyy-MM-dd"
+                        minDate={new Date()}
+                        customInput={<TextField fullWidth margin="normal" label="Date" />}
+                    />
+                    <DialogActions>
+                        <Button onClick={onClose} color="primary">
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? <CircularProgress size={24} /> : 'Book'}
+                        </Button>
+                    </DialogActions>
+                </form>
             </DialogContent>
-            <DialogActions>
-                <Button onClick={onClose} color="secondary">
-                    Cancel
-                </Button>
-                <Button
-                    onClick={handleBookDate}
-                    variant="contained"
-                    color="primary"
-                    disabled={isLoading}
-                >
-                    Book Date
-                </Button>
-            </DialogActions>
-            <ToastContainer />
         </Dialog>
     );
-
-};
+}
 
 export default BookDate;

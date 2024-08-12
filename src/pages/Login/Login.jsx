@@ -1,19 +1,69 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Typography, Container, Grid, Box, CircularProgress, TextField, Button } from '@mui/material';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom'; // Use navigate for navigation
 import GoogleIcon from '@mui/icons-material/Google'; // Add Google icon
 import AppleIcon from '@mui/icons-material/Apple'; // Add Apple icon
+import { GitHub } from "@mui/icons-material";
 
-const API_URL = import.meta.env.VITE_API_URL;
-
+const API_URL = import.meta.env.VITE_API_URL; // server url: http://127.0.0.1:5000
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const GOOGLE_REDIRECT_URI = import.meta.env.VITE_GOOGLE_REDIRECT_URI; // http://localhost:5173/auth/google/callback
 
 function Login() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [userData, setUserData] = useState({ email: "", password: "" });
     const navigate = useNavigate(); 
+
+    // this will run once the URL changes and capture the authorization code.
+    useEffect(() => {
+        const queryParams = new URLSearchParams(window.location.search);
+        const code = queryParams.get('code');
+        const state = queryParams.get('state');
+    
+        if (code && state) {
+            const storedState = localStorage.getItem('oauth_state');
+    
+            if (state === storedState) {
+                fetch(`${API_URL}/auth/google/callback?code=${code}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.access_token || data.refresh_token) {
+                        localStorage.setItem('accessToken', data.access_token);
+                        localStorage.setItem('refreshToken', data.refresh_token);
+                        const currentTime = new Date().getTime();
+                        const accessTokenExpiresInMs = parseInt(data.access_token_expires_in) * 60 * 1000;
+                        const refreshTokenExpiresInMs = parseInt(data.refresh_token_expires_in) * 24 * 60 * 60 * 1000;
+                        localStorage.setItem('accessTokenExpiration', currentTime + accessTokenExpiresInMs);
+                        localStorage.setItem('refreshTokenExpiration', currentTime + refreshTokenExpiresInMs);
+    
+                        navigate('/profile');
+                    } else {
+                        console.error('Failed to authenticate with Google.');
+                        navigate('/login');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    navigate('/login');
+                });
+            } else {
+                console.error('State parameter mismatch or missing code.');
+                navigate('/failedlogin');
+            }
+        }
+    }, [navigate]);
+    
+    
+    
+    
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -74,6 +124,37 @@ function Login() {
         }
     };
 
+    const handleGoogleLogin = async () => {
+        try {
+            const response = await fetch(`${API_URL}/auth/google/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ redirect_uri: GOOGLE_REDIRECT_URI }),
+            });
+
+            const data = await response.json();
+            
+
+            if (data.authorization_url && data.state) {
+                // Store state in localStorage for comparison during callback
+                localStorage.setItem('oauth_state', data.state);
+
+                // Redirect to Google for authentication
+                window.location.href = data.authorization_url;
+            } else {
+                console.error('Failed to get authorization URL');
+            }
+        } catch (err) {
+            console.error('Error:', err);
+        }
+    };
+      
+    
+    
+    
+
     return (
         <Container>
             <Grid container spacing={2} justifyContent="center" alignItems="center">
@@ -126,23 +207,28 @@ function Login() {
                         startIcon={<GoogleIcon />}
                         fullWidth
                         style={{ marginBottom: "10px" }}
-                        onClick={() => toast.info("Google login not implemented yet.")}
+                        onClick={handleGoogleLogin}
                     >
                         Login with Google
                     </Button>
+
                     <Button
-                        variant="outlined"
-                        startIcon={<AppleIcon />}
-                        fullWidth
-                        onClick={() => toast.info("Apple login not implemented yet.")}
-                    >
-                        Login with Apple
+                    variant="outlined"
+                    startIcon={<GitHub />}
+                    fullWidth
+                    onClick={() => toast.info("GitHub login not implemented yet.")}>
+                    Login with GitHub
                     </Button>
+
+                   
                 </Grid>
             </Grid>
-            <ToastContainer />
+            <ToastContainer
+                autoClose={1500}
+            />
         </Container>
     );
+    
 }
 
 export default Login;

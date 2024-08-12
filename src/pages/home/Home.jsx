@@ -79,7 +79,7 @@ function Home() {
                 <Grid container spacing={3} justifyContent="center" alignItems="center">
                     <Grid item xs={12}>
                         <Typography variant="h4" align="center" gutterBottom>
-                            Welcome to the Home Page
+                            Your Properties: {Object.keys(responseData).length}
                         </Typography>
                     </Grid>
     

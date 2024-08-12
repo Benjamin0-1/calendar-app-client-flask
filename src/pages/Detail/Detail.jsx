@@ -157,7 +157,7 @@ const handleCloseCreateDialog = () => {
                                 }}
                             >
                                 <Typography variant="body1" component="p" sx={{ fontWeight: 'bold' }}>
-                                    Customer Name: {booking.customerName}
+                                    Customer: {booking.customerName}
                                 </Typography>
                                 <Typography variant="body1" component="p">
                                     Date: {booking.date}
@@ -249,6 +249,7 @@ const handleCloseCreateDialog = () => {
             <BookDate
                 open={openCreateDialog}
                 onClose={handleCloseCreateDialog}
+                propertyId={id}
             />
         </Container>
     );

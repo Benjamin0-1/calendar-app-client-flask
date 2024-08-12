@@ -90,8 +90,9 @@ function App() {
           <Route path="/settings/view-deleted-bookings" element={<DeletedDate />} />
           <Route path="/property-details/:id" element={<Detail />} />
           <Route path="/create-property" element={<CreateProperty />} />
+          <Route path="/failedlogin" element={<h1>Failed Login</h1>} />
     
-          <Route path="*" element={<h1>Not found</h1>} />
+          <Route path="*" element={<Login />} />
         </Routes>
       </Container>
     </Router>
