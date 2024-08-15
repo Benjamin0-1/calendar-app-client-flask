@@ -7,7 +7,7 @@ import FetchWithAuth from "../../utils/FetchWithAuthentication";
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import CreateProperty from "../CreateProperty/CreateProperty"; // sub component
 import BookDate from "../BookDate/BookDate"; // sub component
-import DatePicker from "react-datepicker"; // need to adjust its size to make it bigger.
+//import DatePicker from "react-datepicker"; // need to adjust its size to make it bigger.
 import "react-datepicker/dist/react-datepicker.css";
 
 
@@ -420,6 +420,8 @@ const handleCloseCreateDialog = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+
     
             {/* Create Booking Dialog */}
             <BookDate
@@ -428,6 +430,8 @@ const handleCloseCreateDialog = () => {
                 propertyId={id}
             />
         </Container>
+
+
     );
     
     

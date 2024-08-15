@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import { CircularProgress, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 import FetchWithAuth from "../../utils/FetchWithAuthentication";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -12,7 +10,7 @@ function BookDate({ open, onClose, propertyId }) {
     const [form, setForm] = useState({
         propertyId: "",
         customerName: "",
-        date: null,
+        date: "", // Initialize as an empty string for HTML date input
     });
     const [isLoading, setIsLoading] = useState(false);
 
@@ -33,10 +31,10 @@ function BookDate({ open, onClose, propertyId }) {
         }));
     };
 
-    const handleDateChange = (date) => {
+    const handleDateChange = (event) => {
         setForm((prevForm) => ({
             ...prevForm,
-            date: date,
+            date: event.target.value, // Get the date value directly from the event
         }));
     };
 
@@ -53,7 +51,7 @@ function BookDate({ open, onClose, propertyId }) {
                 body: JSON.stringify({
                     propertyId: form.propertyId,
                     customerName: form.customerName,
-                    date: form.date ? form.date.toISOString().split('T')[0] : "",
+                    date: form.date, // Use the date string directly
                 }),
             });
 
@@ -62,7 +60,7 @@ function BookDate({ open, onClose, propertyId }) {
             if (response.ok) {
                 toast.success('Booking created successfully');
                 onClose();
-                location.reload(); // needs to be replaced with a better solution, this is a temporary approach.
+                window.location.reload();
             } else {
                 toast.error(data.error || "Failed to create booking.");
             }
@@ -92,7 +90,7 @@ function BookDate({ open, onClose, propertyId }) {
                         label="Property ID"
                         value={form.propertyId}
                         onChange={handleInputChange}
-                        disabled // disable the input field as it's passed from parent automatically.
+                        disabled // Disable the input field as it's passed from parent automatically.
                     />
                     <TextField
                         fullWidth
@@ -103,13 +101,16 @@ function BookDate({ open, onClose, propertyId }) {
                         value={form.customerName}
                         onChange={handleInputChange}
                     />
-                    <DatePicker
-                        selected={form.date}
-                        
+                    <TextField
+                        fullWidth
+                        margin="normal"
+                        id="date"
+                        name="date"
+                        label="Date"
+                        type="date"
+                        value={form.date}
                         onChange={handleDateChange}
-                        dateFormat="yyyy-MM-dd"
-                        minDate={new Date()}
-                        customInput={<TextField fullWidth margin="normal" label="Date" />}
+                        InputLabelProps={{ shrink: true }} // Ensure the label shrinks for date input
                     />
                     <DialogActions>
                         <Button onClick={onClose} color="primary">

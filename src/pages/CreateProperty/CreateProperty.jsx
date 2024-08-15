@@ -78,7 +78,7 @@ function CreateProperty() {
                     padding: 2,
                     borderRadius: 2,
                     boxShadow: 3,
-                    backgroundColor: '#f9f9f9'
+                    backgroundColor: '#'
                 }}
             >
                 <TextField
