@@ -22,6 +22,8 @@ import CreateProperty from './pages/CreateProperty/CreateProperty';
 import LogOutButton from './components/LogOutButton';
 import BookDate from './pages/BookDate/BookDate';
 import EmailConfirmed from './pages/EmailConfirmed/EmailConfirmed';
+import RequestPasswordReset from './pages/RequestPasswordReset/RequestPasswordReset';
+import ResetPassword from './pages/ResetPassword/ResetPassword';
 
 function App() {
   const [theme, setTheme] = useState('light'); // 'light' or 'dark', light by default.
@@ -93,6 +95,8 @@ function App() {
           <Route path="/create-property" element={<CreateProperty />} />
           <Route path="/failedlogin" element={<h1>Failed Login</h1>} />
           <Route path='/email-confirmed' element={<EmailConfirmed />} />
+          <Route path="/request-password-reset" element={<RequestPasswordReset />} />
+          <Route path='/reset-password' element={< ResetPassword />} />
     
           <Route path="*" element={<Login />} />
         </Routes>

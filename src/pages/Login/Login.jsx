@@ -192,11 +192,31 @@ function Login() {
                         Login with Google
                     </Button>
                 </Grid>
+                <Grid item xs={12}>
+                    <Button
+                        variant="text"
+                        fullWidth
+                        onClick={() => {navigate('/request-password-reset')}}
+                        style={{ marginBottom: "10px" }}
+                    >
+                        Forgot Password?
+                    </Button>
+                </Grid>
+                <Grid item xs={12}>
+                    <Button
+                        variant="text"
+                        fullWidth
+                        onClick={() => {navigate('/signup')}}
+                        style={{ marginBottom: "10px" }}
+                    >
+                        Don't have an account? Create one
+                    </Button>
+                </Grid>
             </Grid>
             <ToastContainer autoClose={1500} />
         </Container>
     );
     
-}
+};
 
 export default Login;

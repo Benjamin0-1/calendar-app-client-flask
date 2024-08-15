@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { TextField, Button, Typography, Container, Grid, Box } from '@mui/material';
 import { CircularProgress } from '@mui/material';
-import { ToastContainer, toast } from 'react-toastify'; // Import ToastContainer and toast
-import 'react-toastify/dist/ReactToastify.css'; // Import the CSS for Toastify
+import { ToastContainer, toast } from 'react-toastify'; 
+import 'react-toastify/dist/ReactToastify.css'; 
+import { useNavigate } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -15,6 +16,7 @@ function Signup() {
         confirmPassword: "",
     });
     const [isLoading, setIsLoading] = useState(false);
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         setIsLoading(true);
@@ -55,6 +57,10 @@ function Signup() {
 
             if (response.ok) {
                 toast.success("User signed up successfully", { autoClose: 2000 });
+                setTimeout(() => {
+                    navigate("/login");
+                }
+                , 2000);
                 return;
             }
 
