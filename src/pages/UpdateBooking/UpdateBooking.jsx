@@ -61,6 +61,8 @@ function UpdateBooking({open, onClose, propertyId, dateToBeUpdated}) {
         };
     };
 
+    
+
 
     // responsive JSX here.
     return (

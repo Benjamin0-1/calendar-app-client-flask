@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Typography, Container, Grid, CircularProgress, Box, Button, 
-    Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+    Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';  
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import FetchWithAuth from "../../utils/FetchWithAuthentication";
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import CreateProperty from "../CreateProperty/CreateProperty"; // sub component
 import BookDate from "../BookDate/BookDate"; // sub component
+import DatePicker from "react-datepicker"; // need to adjust its size to make it bigger.
+import "react-datepicker/dist/react-datepicker.css";
+
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -18,6 +21,18 @@ function Detail() {
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [createPropertyDialogOpen, setCreatePropertyDialogOpen] = useState(false);
     const [openCreateDialog, setOpenCreateDialog] = useState(false); // BookDate
+    const [dateToBeUpdated, setDateToBeUpdated] = useState(null);
+    const navigate = useNavigate();
+
+    const [form, setForm] = useState({
+        customerName: "",
+        date: null,
+    });
+    const [openUpdateDialog, setOpenUpdateDialog] = useState(false);
+    const [bookingDetails, setBookingDetails] = useState(null);
+
+
+
 
     // Fetch the property detail by id
     useEffect(() => {
@@ -32,6 +47,10 @@ function Detail() {
                 });
 
                 const data = await response.json();
+
+                if (data.emailNotConfirmed) { 
+                    navigate('/emailnotconfirmed')
+                }
 
                 if (response.ok) {
                     setResponseData(data);
@@ -85,6 +104,87 @@ function Detail() {
         }
     };
 
+    // update a booking.
+    const handleUpdate = async () => {
+        setIsLoading(true);
+
+        try {
+           
+            const newDate = form.date ? new Date(form.date).toISOString().split('T')[0] : null;
+
+            const response = await FetchWithAuth(`${API_URL}/bookings`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    propertyId: id,
+                    currentDate: dateToBeUpdated, 
+                    customerName: form.customerName,
+                    newDate: newDate, 
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                toast.success(data.message);
+                setOpenUpdateDialog(false);
+                console.log('Booking updated successfully');
+                
+                setResponseData((prevState) => ({
+                    ...prevState,
+                    bookedDates: prevState.bookedDates.map((booking) => {
+                        if (booking.id === bookingDetails.id) {
+                            return {
+                                ...booking,
+                                customerName: form.customerName,
+                                date: newDate,
+                                // phone number in the future.
+                            };
+                        }
+                        return booking;
+                    }),
+                }));
+            } else if (data.error) {
+                toast.error(data.error);
+            }
+        } catch (error) {
+            console.log(`Error updating booking: ${error}`);
+            toast.error("Error updating booking");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+
+    const handleInputChange = (event) => {
+        const { name, value } = event.target;
+        setForm((prevForm) => ({
+            ...prevForm,
+            [name]: value,
+        }));
+    };
+
+
+    const openUpdateDialogUpdate = (booking) => {
+        setBookingDetails(booking);
+        setDateToBeUpdated(booking.date); 
+        setForm({
+            customerName: booking.customerName,
+            date: new Date(booking.date), 
+        });
+        setOpenUpdateDialog(true);
+    };
+    
+    
+    const closeUpdateDialog = () => {
+        setOpenUpdateDialog(false);
+        setBookingDetails(null);
+    };
+    
+
+
 
    const openDialog = (booking) => {
     setSelectedBooking(booking);
@@ -114,6 +214,8 @@ const handleCloseCreateDialog = () => {
     setOpenCreateDialog(false);
 };
 
+
+
     if (isLoading) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
@@ -126,16 +228,21 @@ const handleCloseCreateDialog = () => {
         return null;
     }
 
+
+    // this component will be updated to include pagination, filter from asc and desc, and also search by customer name.
+    // all of these filters are dynamic and use the same server route.
+    // the url state will be dynamically updated based on the user's interaction with the filters.
     return (
         <Container>
             <ToastContainer />
+    
             <Typography variant="h4" component="h1" gutterBottom>
                 Property: {responseData.propertyName}
             </Typography>
             <Typography variant="h6" component="h2" gutterBottom>
                 Property ID: {responseData.id}
             </Typography>
-
+    
             <Typography variant="h5" component="h3" gutterBottom>
                 Booked Dates:
             </Typography>
@@ -148,12 +255,12 @@ const handleCloseCreateDialog = () => {
                                     border: '1px solid #ddd',
                                     borderRadius: '8px',
                                     padding: 2,
-                                    backgroundColor: '#fafafa',
+                                    backgroundColor: '#',
                                     boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                                     transition: 'transform 0.2s ease',
                                     '&:hover': {
                                         transform: 'scale(1.02)',
-                                    }
+                                    },
                                 }}
                             >
                                 <Typography variant="body1" component="p" sx={{ fontWeight: 'bold' }}>
@@ -165,6 +272,7 @@ const handleCloseCreateDialog = () => {
                                 <Typography variant="body1" component="p">
                                     Booking ID: {booking.id}
                                 </Typography>
+    
                                 <Button
                                     variant="contained"
                                     color="error"
@@ -172,6 +280,15 @@ const handleCloseCreateDialog = () => {
                                     sx={{ mt: 2 }}
                                 >
                                     Delete
+                                </Button>
+    
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => openUpdateDialogUpdate(booking)}
+                                    sx={{ mt: 2, ml: 2 }}
+                                >
+                                    Update Booking
                                 </Button>
                             </Box>
                         </Grid>
@@ -182,7 +299,7 @@ const handleCloseCreateDialog = () => {
                     No bookings found for this property.
                 </Typography>
             )}
-
+    
             <Box mt={4}>
                 <Button
                     variant="contained"
@@ -192,6 +309,7 @@ const handleCloseCreateDialog = () => {
                 >
                     Create Property
                 </Button>
+    
                 <Button
                     variant="contained"
                     color="primary"
@@ -201,14 +319,15 @@ const handleCloseCreateDialog = () => {
                     Create Booking
                 </Button>
             </Box>
-
+    
+            {/* Delete Booking Dialog */}
             <Dialog
                 open={dialogOpen}
                 onClose={closeDialog}
                 aria-labelledby="confirm-delete-dialog"
             >
                 <DialogTitle id="confirm-delete-dialog">Confirm Deletion</DialogTitle>
-                <DialogContent>
+                <DialogContent sx={{ minWidth: '600px' }}>
                     <Typography>
                         Are you sure you want to delete this booking? This action cannot be undone.
                     </Typography>
@@ -227,7 +346,63 @@ const handleCloseCreateDialog = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+    
 
+
+
+            {/* Update Booking Dialog */}
+            <Dialog
+                open={openUpdateDialog}
+                onClose={closeUpdateDialog}
+                aria-labelledby="confirm-update-dialog"
+            >
+                <DialogTitle id="confirm-update-dialog">Confirm Update</DialogTitle>
+                <DialogContent sx={{ minWidth: '600px' }}>
+                    <Typography>
+                        Are you sure you want to update this booking?
+                    </Typography>
+                    <TextField
+                        label="Customer Name"
+                        name="customerName"
+                        value={form.customerName}
+                        onChange={handleInputChange}
+                        fullWidth
+                        margin="normal"
+                    />
+                    <TextField
+                        label="Date"
+                        name="date"
+                        type="date"
+                        value={form.date}
+                        onChange={handleInputChange}
+                        fullWidth
+                        margin="normal"
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={closeUpdateDialog} color="primary">
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleUpdate}
+                        sx={{ mt: 2 }}
+                    >
+                        Update
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+
+
+
+
+    
+            {/* Create Property Dialog */}
             <Dialog
                 open={createPropertyDialogOpen}
                 onClose={closeCreatePropertyDialog}
@@ -245,7 +420,8 @@ const handleCloseCreateDialog = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
-
+    
+            {/* Create Booking Dialog */}
             <BookDate
                 open={openCreateDialog}
                 onClose={handleCloseCreateDialog}
@@ -253,6 +429,8 @@ const handleCloseCreateDialog = () => {
             />
         </Container>
     );
+    
+    
 
 
 

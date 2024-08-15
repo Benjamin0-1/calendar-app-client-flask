@@ -21,6 +21,7 @@ import Detail from './pages/Detail/Detail';
 import CreateProperty from './pages/CreateProperty/CreateProperty';
 import LogOutButton from './components/LogOutButton';
 import BookDate from './pages/BookDate/BookDate';
+import EmailConfirmed from './pages/EmailConfirmed/EmailConfirmed';
 
 function App() {
   const [theme, setTheme] = useState('light'); // 'light' or 'dark', light by default.
@@ -91,6 +92,7 @@ function App() {
           <Route path="/property-details/:id" element={<Detail />} />
           <Route path="/create-property" element={<CreateProperty />} />
           <Route path="/failedlogin" element={<h1>Failed Login</h1>} />
+          <Route path='/email-confirmed' element={<EmailConfirmed />} />
     
           <Route path="*" element={<Login />} />
         </Routes>

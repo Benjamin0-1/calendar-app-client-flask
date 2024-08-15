@@ -35,6 +35,11 @@ function Profile() {
                 });
 
                 const data = await response.json();
+
+                if (data.emailNotConfirmed) {
+                    navigate('/emailnotconfirmed');
+                    return
+                }
                 
                 if (response.ok) {
                     setUserData(data);
