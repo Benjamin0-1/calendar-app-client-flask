@@ -24,6 +24,8 @@ import BookDate from './pages/BookDate/BookDate';
 import EmailConfirmed from './pages/EmailConfirmed/EmailConfirmed';
 import RequestPasswordReset from './pages/RequestPasswordReset/RequestPasswordReset';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
+import FAQ from './pages/FAQ/FAQ';
+import About from './pages/About/About';
 
 function App() {
   const [theme, setTheme] = useState('light'); // 'light' or 'dark', light by default.
@@ -97,6 +99,9 @@ function App() {
           <Route path='/email-confirmed' element={<EmailConfirmed />} />
           <Route path="/request-password-reset" element={<RequestPasswordReset />} />
           <Route path='/reset-password' element={< ResetPassword />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/" element={<About />} />
     
           <Route path="*" element={<Login />} />
         </Routes>

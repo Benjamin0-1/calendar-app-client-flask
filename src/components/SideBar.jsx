@@ -96,6 +96,12 @@ const SideBar = () => {
                         </ListItemIcon>
                         <ListItemText primary="Settings" />
                     </ListItem>
+                    <ListItem button component={Link} to="/faq">
+                        <ListItemIcon>
+                            <MailIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="FAQ" />
+                    </ListItem>
                 </List>
             </Drawer>
         </>

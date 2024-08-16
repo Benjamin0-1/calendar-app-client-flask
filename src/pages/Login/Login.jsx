@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Typography, Container, Grid, Box, CircularProgress, TextField, Button } from '@mui/material';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -13,6 +13,21 @@ function Login() {
     const [error, setError] = useState(null);
     const [userData, setUserData] = useState({ email: "", password: "" });
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const refreshTokenExpiration = localStorage.getItem('refreshTokenExpiration'); 
+
+        if (refreshTokenExpiration && !isTokenExpired(refreshTokenExpiration)) {
+            navigate("/profile");
+        }
+    }, [navigate]);
+
+    // put this function inside of /utils
+    const isTokenExpired = (expiration) => {
+        const currentTime = Date.now();
+        const expirationTime = new Date(expiration).getTime();
+        return currentTime > expirationTime;
+    };
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -33,7 +48,7 @@ function Login() {
                 const currentTime = new Date().getTime();
                 const accessTokenExpiresInMs = parseInt(data.access_token_expires_in) * 60 * 1000; // accessToken is in minutes.
                 const refreshTokenExpiresInMs = parseInt(data.refresh_token_expires_in) * 24 * 60 * 60 * 1000; // while refreshToken is in days.
-                // this will allow FetchWithAuth to work properly along with the HOC withAuth.
+    
     
                 localStorage.setItem("accessToken", data.access_token);
                 localStorage.setItem("refreshToken", data.refresh_token);
@@ -41,7 +56,7 @@ function Login() {
                 localStorage.setItem("refreshTokenExpiration", currentTime + refreshTokenExpiresInMs);
     
                 toast.success("Logged in successfully");
-                navigate("/profile"); // Use navigate to redirect
+                navigate("/profile"); 
                 return;
             }
 
