@@ -8,9 +8,6 @@ import CreateProperty from "../CreateProperty/CreateProperty";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// will need a new route to click on a property and see the bookings for that property.
-// needs a detail page for each property, using react params.
-
 function Home() {
     const [responseData, setResponseData] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -24,7 +21,6 @@ function Home() {
         const refreshTokenExpiration = localStorage.getItem('refreshTokenExpiration');
 
         if (!refreshTokenExpiration || isTokenExpired(refreshTokenExpiration)) {
-            // If the refresh token is invalid or expired, redirect to login
             navigate("/login");
         }
     }, [navigate]);
@@ -51,16 +47,19 @@ const handleFetch = async () => {
 
         if (response.status === 404) {
             setCreatePropertyButtonVisible(true);
-            return
+            return;
         };
 
         if (response.ok) {
-            if (data.length === 0) {
-                setCreatePropertyButtonVisible(true);
-            } else {
-                setResponseData(data);
-                setCreatePropertyButtonVisible(false); 
-            }
+        
+            const properties = Object.keys(data).map(propertyName => ({
+                id: data[propertyName].id,
+                propertyName,
+            }));
+
+            setResponseData(properties);
+
+            setCreatePropertyButtonVisible(properties.length === 0);
         } else {
             if (data.emailNotConfirmed) {
                 toast.error("Email not confirmed");
@@ -80,6 +79,7 @@ const handleFetch = async () => {
         setIsLoading(false);
     }
 };
+
 
 
     useEffect(() => {
@@ -147,15 +147,17 @@ const handleFetch = async () => {
                                         No properties found.
                                     </Typography>
                                 )}
-                                {createPropertyButtonVisible && (
-                                    <Box display="flex" justifyContent="center" mt={2}>
-                                        <button onClick={() => navigate('/create-property')}>
-                                            Create Property
-                                        </button>
-                                    </Box>
-                                )}
                             </>
                         )}
+                    </Grid>
+                    
+                   
+                    <Grid item xs={12}>
+                        <Box display="flex" justifyContent="center" mt={2}>
+                            <button onClick={() => navigate('/create-property')}>
+                                Create Property
+                            </button>
+                        </Box>
                     </Grid>
                 </Grid>
             </Container>
