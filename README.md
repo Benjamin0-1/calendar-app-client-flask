@@ -2,7 +2,7 @@
 
 A React front end for managing day-by-day bookings across many properties: venues, rentals, or anything you rent out one day at a time. It covers most of what the [Flask API](https://github.com/Benjamin0-1/calendar-app-server-flask) offers.
 
-![Dashboard](04-dashboard.jpg)
+![Dashboard](docs/screenshots/04-dashboard.jpg)
 
 ## Features
 
@@ -17,12 +17,12 @@ A React front end for managing day-by-day bookings across many properties: venue
 
 | | |
 |---|---|
-| ![Landing page](01-landing.jpg) | ![Log in](02-login.jpg) |
-| ![Sign up](03-signup.jpg) | ![Dashboard](04-dashboard.jpg) |
-| ![Property bookings](05-property-bookings.jpg) | ![Book a date](06-book-a-date.jpg) |
-| ![Profile](07-profile.jpg) | ![Settings](08-settings.jpg) |
-| ![Login history](09-login-history.jpg) | ![Deleted bookings](10-deleted-bookings.jpg) |
-| ![Dark mode](11-dark-mode.jpg) | |
+| ![Landing page](docs/screenshots/01-landing.jpg) | ![Log in](docs/screenshots/02-login.jpg) |
+| ![Sign up](docs/screenshots/03-signup.jpg) | ![Dashboard](docs/screenshots/04-dashboard.jpg) |
+| ![Property bookings](docs/screenshots/05-property-bookings.jpg) | ![Book a date](docs/screenshots/06-book-a-date.jpg) |
+| ![Profile](docs/screenshots/07-profile.jpg) | ![Settings](docs/screenshots/08-settings.jpg) |
+| ![Login history](docs/screenshots/09-login-history.jpg) | ![Deleted bookings](docs/screenshots/10-deleted-bookings.jpg) |
+| ![Dark mode](docs/screenshots/11-dark-mode.jpg) | |
 
 ## Tech stack
 
