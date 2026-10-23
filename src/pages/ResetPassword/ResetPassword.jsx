@@ -22,13 +22,15 @@ function ResetPassword() {
     const navigate = useNavigate();
     const query = useQuery();
     const email = query.get('email');
-    const otp = query.get('otp');
+    const otpFromUrl = query.get('otp');
+    // prefilled from the reset link, but still editable in case the user pastes the code by hand.
+    const [otp, setOtp] = useState(otpFromUrl || "");
 
     useEffect(() => {
-        if (!email || !otp) {
+        if (!email || !otpFromUrl) {
             navigate('/login');
         }
-    }, [email, otp, navigate]);
+    }, [email, otpFromUrl, navigate]);
 
     const handleResetPassword = async (e) => {
         e.preventDefault();

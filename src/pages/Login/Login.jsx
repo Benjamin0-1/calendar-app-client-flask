@@ -63,7 +63,8 @@ function Login() {
             }
 
             if (data.emailNotConfirmed) { 
-                navigate("/confirm-email");
+                navigate("/emailnotconfirmed");
+                return;
             }
 
             if (data.error) {

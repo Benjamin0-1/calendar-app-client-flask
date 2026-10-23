@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import FetchWithAuth from "./FetchWithAuthentication";
+import { refreshAccessToken } from "./FetchWithAuthentication";
 import LoadingState from "../components/LoadingState";
 
 

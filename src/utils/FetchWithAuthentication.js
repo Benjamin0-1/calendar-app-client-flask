@@ -1,14 +1,14 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
-const refreshToken = localStorage.getItem('refreshToken');
-
 
 const minutesToMilliseconds = (minutes) => minutes * 60 * 1000; // convert milliseconds to minutes
 
 const daysToMilliseconds = (days) => days * 24 * 60 * 60 * 1000;
 
-// Refresh the access token
-async function refreshAccessToken() {
+// Refresh the access token. Throws if it can't, so callers can send the user to log in.
+export async function refreshAccessToken() {
+    // read at call time: the token changes whenever the user logs in or out.
+    const refreshToken = localStorage.getItem('refreshToken');
     try {
         if (!refreshToken) {
             throw new Error('No refresh token found');
@@ -37,13 +37,14 @@ async function refreshAccessToken() {
         localStorage.setItem('accessTokenExpiration', Date.now() + expiresInMilliseconds); 
     } catch (error) {
         console.error('Error refreshing access token:', error);
-
+        throw error;
     };
 };
 
 
-async function FetchWithAuth(url, options) {
+async function FetchWithAuth(url, options, hasRetried = false) {
     let accessToken = localStorage.getItem('accessToken');
+    const refreshToken = localStorage.getItem('refreshToken');
     const tokenExpiration = parseInt(localStorage.getItem('accessTokenExpiration'), 10);
     const refreshTokenExpiration = parseInt(localStorage.getItem('refreshTokenExpiration'), 10);
     const currentTime = Date.now();
@@ -69,11 +70,10 @@ async function FetchWithAuth(url, options) {
             },
         });
 
-        // If response status is 401, try to refresh the token and retry
-        if (response.status === 401) {
-            await refreshAccessToken(); // Try refreshing the token if 401 error occurs
-            accessToken = localStorage.getItem('accessToken'); // Update accessToken after refreshing
-            return FetchWithAuth(url, options); // Retry the request
+        // If response status is 401, refresh the token and retry once
+        if (response.status === 401 && !hasRetried) {
+            await refreshAccessToken();
+            return FetchWithAuth(url, options, true);
         }
 
         return response;
