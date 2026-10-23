@@ -1,12 +1,40 @@
-import React, { useEffect, useState } from "react";
-import { Container, Typography, Grid, Box, CircularProgress, Card, CardContent } from '@mui/material';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useEffect, useState } from "react";
+import { Container, Typography, Box, Card, Avatar, Chip, Stack, Tooltip } from '@mui/material';
+import { alpha } from '@mui/material/styles';
+import { toast } from 'react-toastify';
 import FetchWithAuth from "../../utils/FetchWithAuthentication";
 //import withAuth from "../../utils/ifNotLoggedIn";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
+import ComputerIcon from '@mui/icons-material/ComputerOutlined';
+import PhoneIcon from '@mui/icons-material/PhoneIphoneOutlined';
+import HistoryIcon from '@mui/icons-material/History';
+import PageHeader from '../../components/PageHeader';
+import EmptyState from '../../components/EmptyState';
+import LoadingState from '../../components/LoadingState';
 
 const API_URL = import.meta.env.VITE_API_URL;
+
+// Turns a raw user-agent string into something like "Chrome on macOS".
+const describeUserAgent = (userAgent = '') => {
+    const browser =
+        /Edg\//.test(userAgent) ? 'Edge'
+        : /Firefox\//.test(userAgent) ? 'Firefox'
+        : /Chrome\//.test(userAgent) ? 'Chrome'
+        : /Safari\//.test(userAgent) ? 'Safari'
+        : null;
+    const os =
+        /iPhone|iPad/.test(userAgent) ? 'iOS'
+        : /Android/.test(userAgent) ? 'Android'
+        : /Windows/.test(userAgent) ? 'Windows'
+        : /Mac OS X/.test(userAgent) ? 'macOS'
+        : /Linux/.test(userAgent) ? 'Linux'
+        : null;
+
+    if (browser && os) return `${browser} on ${os}`;
+    return browser || os || 'Unknown device';
+};
+
+const isMobileUserAgent = (userAgent = '') => /Mobi|Android|iPhone|iPad/.test(userAgent);
 
 function LoginHistory() {
     const [serverData, setServerData] = useState([]);
@@ -48,36 +76,67 @@ function LoginHistory() {
     }, []);
 
     return (
-        <Container>
-            <Typography variant="h4" gutterBottom>
-                Login History
-            </Typography>
+        <Container maxWidth="md">
+            <PageHeader
+                backTo="/settings"
+                backLabel="Settings"
+                title="Login history"
+                subtitle="Recent sign-ins to your account. If something looks unfamiliar, change your password."
+            />
             {isLoading ? (
-                <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-                    <CircularProgress />
-                </Box>
+                <LoadingState label="Loading login history" />
+            ) : serverData.length > 0 ? (
+                <Card>
+                    {serverData.map((record, index) => {
+                        const isMobile = isMobileUserAgent(record.user_agent);
+
+                        return (
+                            <Stack
+                                key={index}
+                                direction="row"
+                                spacing={2}
+                                sx={{ alignItems: 'flex-start', p: { xs: 2, sm: 2.5 }, borderTop: index === 0 ? 0 : 1, borderColor: 'divider' }}
+                            >
+                                <Avatar
+                                    variant="rounded"
+                                    sx={(theme) => ({
+                                        width: 40,
+                                        height: 40,
+                                        borderRadius: 2.5,
+                                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                        color: 'primary.main',
+                                    })}
+                                >
+                                    {isMobile ? <PhoneIcon fontSize="small" /> : <ComputerIcon fontSize="small" />}
+                                </Avatar>
+                                <Box sx={{ flex: 1, minWidth: 0 }}>
+                                    <Stack direction="row" spacing={1} useFlexGap sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                            {describeUserAgent(record.user_agent)}
+                                        </Typography>
+                                        {!record.logout_time && <Chip size="small" color="success" variant="outlined" label="Not yet logged out" />}
+                                    </Stack>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {record.ip_address} · Logged in {new Date(record.login_time).toLocaleString()}
+                                    </Typography>
+                                    {record.logout_time && (
+                                        <Typography variant="body2" color="text.secondary">
+                                            Logged out {new Date(record.logout_time).toLocaleString()}
+                                        </Typography>
+                                    )}
+                                    <Tooltip title={record.user_agent || ''} placement="bottom-start">
+                                        <Typography variant="caption" color="text.disabled" noWrap component="div" sx={{ mt: 0.5 }}>
+                                            {record.user_agent}
+                                        </Typography>
+                                    </Tooltip>
+                                </Box>
+                            </Stack>
+                        );
+                    })}
+                </Card>
             ) : (
-                <Grid container spacing={3}>
-                    {serverData.length > 0 ? (
-                        serverData.map((record, index) => (
-                            <Grid item xs={12} sm={6} md={4} key={index}>
-                                <Card>
-                                    <CardContent>
-                                        <Typography variant="h6">Login Record {index + 1}</Typography>
-                                        <Typography variant="body2">IP Address: {record.ip_address}</Typography>
-                                        <Typography variant="body2">Login Time: {new Date(record.login_time).toLocaleString()}</Typography>
-                                        <Typography variant="body2">Logout Time: {record.logout_time ? new Date(record.logout_time).toLocaleString() : "Not yet logged out"}</Typography>
-                                        <Typography variant="body2">User Agent: {record.user_agent}</Typography>
-                                    </CardContent>
-                                </Card>
-                            </Grid>
-                        ))
-                    ) : (
-                        <Typography variant="body1">No login history available.</Typography>
-                    )}
-                </Grid>
+                <EmptyState icon={<HistoryIcon fontSize="large" />} title="No login history available" />
             )}
-            <ToastContainer autoClose={3000} />
         </Container>
     );
 }

@@ -1,9 +1,11 @@
-import React, { useState } from "react";
-import { TextField, Button, Typography, Container, Grid, Box } from '@mui/material';
+import { useState } from "react";
+import { TextField, Button, Typography, Grid, Box, Link as MuiLink } from '@mui/material';
 import { CircularProgress } from '@mui/material';
-import { ToastContainer, toast } from 'react-toastify'; 
-import 'react-toastify/dist/ReactToastify.css'; 
-import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { useNavigate, Link } from 'react-router';
+import PersonAddIcon from '@mui/icons-material/PersonAddAltOutlined';
+import AuthCard from '../../components/AuthCard';
+import PasswordField from '../../components/PasswordField';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -103,93 +105,102 @@ function Signup() {
     };
 
     return (
-        <Container component="main" maxWidth="xs">
-            <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <Typography component="h1" variant="h5">Sign Up</Typography>
-                <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                autoComplete="fname"
-                                name="firstName"
-                                variant="outlined"
-                                required
-                                fullWidth
-                                id="firstName"
-                                label="First Name"
-                                autoFocus
-                                value={data.firstName}
-                                onChange={handleChange}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                variant="outlined"
-                                required
-                                fullWidth
-                                id="lastName"
-                                label="Last Name"
-                                name="lastName"
-                                autoComplete="lname"
-                                value={data.lastName}
-                                onChange={handleChange}
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                variant="outlined"
-                                required
-                                fullWidth
-                                id="email"
-                                label="Email Address"
-                                name="email"
-                                autoComplete="email"
-                                value={data.email}
-                                onChange={handleChange}
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                variant="outlined"
-                                required
-                                fullWidth
-                                name="password"
-                                label="Password"
-                                type="password"
-                                id="password"
-                                autoComplete="current-password"
-                                value={data.password}
-                                onChange={handleChange}
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                variant="outlined"
-                                required
-                                fullWidth
-                                name="confirmPassword"
-                                label="Confirm Password"
-                                type="password"
-                                id="confirmPassword"
-                                value={data.confirmPassword}
-                                onChange={handleChange}
-                            />
-                        </Grid>
+        <AuthCard
+            icon={<PersonAddIcon />}
+            title="Create your account"
+            subtitle="Start managing bookings for all of your properties in one place."
+            maxWidth="sm"
+            footer={
+                <Typography variant="body2" color="text.secondary">
+                    Already have an account?{' '}
+                    <MuiLink component={Link} to="/login" underline="hover" sx={{ fontWeight: 600 }}>
+                        Log in
+                    </MuiLink>
+                </Typography>
+            }
+        >
+            <Box component="form" onSubmit={handleSubmit}>
+                <Grid container spacing={2.5}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                        <TextField
+                            autoComplete="fname"
+                            name="firstName"
+                            variant="outlined"
+                            required
+                            fullWidth
+                            id="firstName"
+                            label="First Name"
+                            autoFocus
+                            value={data.firstName}
+                            onChange={handleChange}
+                        />
                     </Grid>
-                    <Button
-                        type="submit"
-                        fullWidth
-                        variant="contained"
-                        color="primary"
-                        sx={{ mt: 3, mb: 2 }}
-                        disabled={isLoading}
-                    >
-                        {isLoading ? <CircularProgress size={24} /> : "Sign Up"}
-                    </Button>
-                </Box>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                        <TextField
+                            variant="outlined"
+                            required
+                            fullWidth
+                            id="lastName"
+                            label="Last Name"
+                            name="lastName"
+                            autoComplete="lname"
+                            value={data.lastName}
+                            onChange={handleChange}
+                        />
+                    </Grid>
+                    <Grid size={12}>
+                        <TextField
+                            variant="outlined"
+                            required
+                            fullWidth
+                            id="email"
+                            label="Email Address"
+                            name="email"
+                            autoComplete="email"
+                            value={data.email}
+                            onChange={handleChange}
+                        />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                        <PasswordField
+                            variant="outlined"
+                            required
+                            fullWidth
+                            name="password"
+                            label="Password"
+                            id="password"
+                            autoComplete="new-password"
+                            value={data.password}
+                            onChange={handleChange}
+                        />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                        <PasswordField
+                            variant="outlined"
+                            required
+                            fullWidth
+                            name="confirmPassword"
+                            label="Confirm Password"
+                            id="confirmPassword"
+                            autoComplete="new-password"
+                            value={data.confirmPassword}
+                            onChange={handleChange}
+                        />
+                    </Grid>
+                </Grid>
+                <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    size="large"
+                    sx={{ mt: 3 }}
+                    disabled={isLoading}
+                >
+                    {isLoading ? <CircularProgress size={24} color="inherit" /> : "Create account"}
+                </Button>
             </Box>
-            <ToastContainer /> 
-        </Container>
+        </AuthCard>
     );
 }
 

@@ -1,6 +1,6 @@
 import LogOutIcon from '@mui/icons-material/Logout';
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { IconButton, Tooltip } from '@mui/material';
+import { useNavigate } from 'react-router';
 // this is a logout button which will be rendered as an icon in the header.
 // when clicked, it will remove all tokens and redirect the user to the login page.
 
@@ -18,7 +18,11 @@ function LogOutButton() {
     };
 
     return (
-        <LogOutIcon onClick={handleLogOut} style={{ cursor: 'pointer' }} />
+        <Tooltip title="Log out">
+            <IconButton onClick={handleLogOut} aria-label="Log out" color="inherit">
+                <LogOutIcon fontSize="small" />
+            </IconButton>
+        </Tooltip>
     );
 
 };

@@ -1,14 +1,22 @@
-import React, { useState, useEffect } from "react";
-import { Typography, Container, Grid, CircularProgress, Box, Button, 
-    Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';  
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useState, useEffect } from "react";
+import { Typography, Container, Grid, Box, Button, Card, CardContent, CardActions, Chip, Stack,
+    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@mui/material';
+import { alpha } from '@mui/material/styles';
+import { toast } from 'react-toastify';
+import { format } from 'date-fns';
 import FetchWithAuth from "../../utils/FetchWithAuthentication";
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router';
 import CreateProperty from "../CreateProperty/CreateProperty"; // sub component
 import BookDate from "../BookDate/BookDate"; // sub component
-//import DatePicker from "react-datepicker"; // need to adjust its size to make it bigger.
-import "react-datepicker/dist/react-datepicker.css";
+import AddIcon from '@mui/icons-material/Add';
+import EventIcon from '@mui/icons-material/EventOutlined';
+import EditIcon from '@mui/icons-material/EditOutlined';
+import DeleteIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import PersonIcon from '@mui/icons-material/PersonOutlineOutlined';
+import PageHeader from '../../components/PageHeader';
+import EmptyState from '../../components/EmptyState';
+import LoadingState from '../../components/LoadingState';
+import { parseBookingDate, toDateInputValue, isPastDate } from '../../utils/dates';
 
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -172,7 +180,7 @@ function Detail() {
         setDateToBeUpdated(booking.date); 
         setForm({
             customerName: booking.customerName,
-            date: new Date(booking.date), 
+            date: toDateInputValue(booking.date), // the date input only accepts yyyy-MM-dd strings.
         });
         setOpenUpdateDialog(true);
     };
@@ -216,151 +224,178 @@ const handleCloseCreateDialog = () => {
 
 
 
-    if (isLoading) {
-        return (
-            <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-                <CircularProgress />
-            </Box>
-        );
+    if (isLoading && !responseData) {
+        return <LoadingState label="Loading property" minHeight="60vh" />;
     }
 
     if (!responseData) {
         return null;
     }
 
+    const bookingCount = responseData.bookedDates.length;
+
 
     // this component will be updated to include pagination, filter from asc and desc, and also search by customer name.
     // all of these filters are dynamic and use the same server route.
     // the url state will be dynamically updated based on the user's interaction with the filters.
     return (
-        <Container>
-            <ToastContainer />
-    
-            <Typography variant="h4" component="h1" gutterBottom>
-                Property: {responseData.propertyName}
+        <Container maxWidth="lg">
+            <PageHeader
+                backTo="/home"
+                backLabel="All properties"
+                eyebrow="Property"
+                title={responseData.propertyName}
+                subtitle={`ID ${responseData.id} · ${bookingCount} ${bookingCount === 1 ? 'booking' : 'bookings'}`}
+                actions={
+                    <>
+                        <Button variant="outlined" color="inherit" startIcon={<AddIcon />} onClick={openCreatePropertyDialog} sx={{ borderColor: 'divider' }}>
+                            New Property
+                        </Button>
+                        <Button variant="contained" startIcon={<EventIcon />} onClick={handleOpenCreateDialog}>
+                            Book a Date
+                        </Button>
+                    </>
+                }
+            />
+
+            <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
+                Booked dates
             </Typography>
-            <Typography variant="h6" component="h2" gutterBottom>
-                Property ID: {responseData.id}
-            </Typography>
-    
-            <Typography variant="h5" component="h3" gutterBottom>
-                Booked Dates:
-            </Typography>
-            {responseData.bookedDates.length > 0 ? (
-                <Grid container spacing={2}>
-                    {responseData.bookedDates.map((booking) => (
-                        <Grid item xs={12} sm={6} md={4} key={booking.id}>
-                            <Box
-                                sx={{
-                                    border: '1px solid #ddd',
-                                    borderRadius: '8px',
-                                    padding: 2,
-                                    backgroundColor: '#',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                                    transition: 'transform 0.2s ease',
-                                    '&:hover': {
-                                        transform: 'scale(1.02)',
-                                    },
-                                }}
-                            >
-                                <Typography variant="body1" component="p" sx={{ fontWeight: 'bold' }}>
-                                    Customer: {booking.customerName}
-                                </Typography>
-                                <Typography variant="body1" component="p">
-                                    Date: {booking.date}
-                                </Typography>
-                                <Typography variant="body1" component="p">
-                                    Booking ID: {booking.id}
-                                </Typography>
-    
-                                <Button
-                                    variant="contained"
-                                    color="error"
-                                    onClick={() => openDialog(booking)}
-                                    sx={{ mt: 2 }}
-                                >
-                                    Delete
-                                </Button>
-    
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={() => openUpdateDialogUpdate(booking)}
-                                    sx={{ mt: 2, ml: 2 }}
-                                >
-                                    Update Booking
-                                </Button>
-                            </Box>
-                        </Grid>
-                    ))}
+
+            {bookingCount > 0 ? (
+                <Grid container spacing={2.5}>
+                    {responseData.bookedDates.map((booking) => {
+                        const date = parseBookingDate(booking.date);
+                        const isPast = date ? isPastDate(date) : false;
+
+                        return (
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={booking.id}>
+                                <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', opacity: isPast ? 0.75 : 1 }}>
+                                    <CardContent sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', flex: 1 }}>
+                                        {/* Calendar tile */}
+                                        <Box
+                                            sx={(theme) => ({
+                                                flexShrink: 0,
+                                                width: 60,
+                                                borderRadius: 2.5,
+                                                overflow: 'hidden',
+                                                textAlign: 'center',
+                                                border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
+                                            })}
+                                        >
+                                            <Box sx={{ bgcolor: isPast ? 'text.disabled' : 'primary.main', color: 'primary.contrastText', py: 0.25 }}>
+                                                <Typography variant="caption" sx={{ fontWeight: 700, letterSpacing: '0.06em' }}>
+                                                    {date ? format(date, 'MMM').toUpperCase() : '—'}
+                                                </Typography>
+                                            </Box>
+                                            <Typography variant="h5" component="div" sx={{ py: 0.5, lineHeight: 1.3 }}>
+                                                {date ? format(date, 'd') : '?'}
+                                            </Typography>
+                                        </Box>
+
+                                        <Box sx={{ minWidth: 0, flex: 1 }}>
+                                            <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', mb: 0.5 }}>
+                                                <PersonIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                                                <Typography variant="subtitle1" sx={{ fontWeight: 600 }} noWrap title={booking.customerName}>
+                                                    {booking.customerName}
+                                                </Typography>
+                                            </Stack>
+                                            <Typography variant="body2" color="text.secondary">
+                                                {date ? format(date, 'EEEE, MMMM d, yyyy') : booking.date}
+                                            </Typography>
+                                            <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
+                                                <Chip
+                                                    size="small"
+                                                    label={isPast ? 'Past' : 'Upcoming'}
+                                                    color={isPast ? 'default' : 'success'}
+                                                    variant={isPast ? 'filled' : 'outlined'}
+                                                />
+                                                <Chip size="small" variant="outlined" label={`#${booking.id}`} />
+                                            </Stack>
+                                        </Box>
+                                    </CardContent>
+                                    <CardActions sx={{ px: 2, pb: 2, pt: 0, gap: 1 }}>
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            startIcon={<EditIcon fontSize="small" />}
+                                            onClick={() => openUpdateDialogUpdate(booking)}
+                                            sx={{ flex: 1 }}
+                                        >
+                                            Edit
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            color="error"
+                                            startIcon={<DeleteIcon fontSize="small" />}
+                                            onClick={() => openDialog(booking)}
+                                            sx={{ flex: 1 }}
+                                        >
+                                            Delete
+                                        </Button>
+                                    </CardActions>
+                                </Card>
+                            </Grid>
+                        );
+                    })}
                 </Grid>
             ) : (
-                <Typography variant="body1" component="p">
-                    No bookings found for this property.
-                </Typography>
+                <EmptyState
+                    icon={<EventIcon fontSize="large" />}
+                    title="No bookings yet"
+                    description="This property doesn't have any booked dates. Add the first one to get started."
+                    action={
+                        <Button variant="contained" startIcon={<EventIcon />} onClick={handleOpenCreateDialog}>
+                            Book a Date
+                        </Button>
+                    }
+                />
             )}
-    
-            <Box mt={4}>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={openCreatePropertyDialog}
-                    sx={{ mt: 2 }}
-                >
-                    Create Property
-                </Button>
-    
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleOpenCreateDialog}
-                    sx={{ mt: 2, ml: 2 }}
-                >
-                    Create Booking
-                </Button>
-            </Box>
-    
+
             {/* Delete Booking Dialog */}
             <Dialog
                 open={dialogOpen}
                 onClose={closeDialog}
                 aria-labelledby="confirm-delete-dialog"
+                maxWidth="xs"
+                fullWidth
             >
-                <DialogTitle id="confirm-delete-dialog">Confirm Deletion</DialogTitle>
-                <DialogContent sx={{ minWidth: '600px' }}>
-                    <Typography>
-                        Are you sure you want to delete this booking? This action cannot be undone.
-                    </Typography>
+                <DialogTitle id="confirm-delete-dialog">Delete booking?</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        {selectedBooking
+                            ? `The booking for ${selectedBooking.customerName} will be removed. You can still find it under Settings → Deleted bookings.`
+                            : 'Are you sure you want to delete this booking?'}
+                    </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={closeDialog} color="primary">
+                    <Button onClick={closeDialog} color="inherit">
                         Cancel
                     </Button>
                     <Button
                         variant="contained"
                         color="error"
                         onClick={handleDeleteBooking}
-                        sx={{ mt: 2 }}
+                        disabled={isLoading}
                     >
                         Delete
                     </Button>
                 </DialogActions>
             </Dialog>
-    
-
-
 
             {/* Update Booking Dialog */}
             <Dialog
                 open={openUpdateDialog}
                 onClose={closeUpdateDialog}
                 aria-labelledby="confirm-update-dialog"
+                maxWidth="sm"
+                fullWidth
             >
-                <DialogTitle id="confirm-update-dialog">Confirm Update</DialogTitle>
-                <DialogContent sx={{ minWidth: '600px' }}>
-                    <Typography>
-                        Are you sure you want to update this booking?
-                    </Typography>
+                <DialogTitle id="confirm-update-dialog">Edit booking</DialogTitle>
+                <DialogContent>
+                    <DialogContentText sx={{ mb: 1 }}>
+                        Change the customer or move this booking to another date.
+                    </DialogContentText>
                     <TextField
                         label="Customer Name"
                         name="customerName"
@@ -377,31 +412,24 @@ const handleCloseCreateDialog = () => {
                         onChange={handleInputChange}
                         fullWidth
                         margin="normal"
-                        InputLabelProps={{
-                            shrink: true,
-                        }}
+                        slotProps={{ inputLabel: { shrink: true } }}
                     />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={closeUpdateDialog} color="primary">
+                    <Button onClick={closeUpdateDialog} color="inherit">
                         Cancel
                     </Button>
                     <Button
                         variant="contained"
                         color="primary"
                         onClick={handleUpdate}
-                        sx={{ mt: 2 }}
+                        disabled={isLoading}
                     >
-                        Update
+                        Save changes
                     </Button>
                 </DialogActions>
             </Dialog>
 
-
-
-
-
-    
             {/* Create Property Dialog */}
             <Dialog
                 open={createPropertyDialogOpen}
@@ -410,19 +438,17 @@ const handleCloseCreateDialog = () => {
                 maxWidth="sm"
                 fullWidth
             >
-                <DialogTitle id="create-property-dialog">Create Property</DialogTitle>
+                <DialogTitle id="create-property-dialog">New property</DialogTitle>
                 <DialogContent>
-                    <CreateProperty />
+                    <CreateProperty embedded />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={closeCreatePropertyDialog} color="primary">
+                    <Button onClick={closeCreatePropertyDialog} color="inherit">
                         Close
                     </Button>
                 </DialogActions>
             </Dialog>
 
-
-    
             {/* Create Booking Dialog */}
             <BookDate
                 open={openCreateDialog}
@@ -430,15 +456,7 @@ const handleCloseCreateDialog = () => {
                 propertyId={id}
             />
         </Container>
-
-
     );
-    
-    
-
-
-
-
 };
 
 export default Detail;

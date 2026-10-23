@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { Typography, Container, Grid, Box, CircularProgress, Button } from '@mui/material';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useEffect, useState } from "react";
+import { Typography, Container, Grid, Button, Card, CardContent, Alert } from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import ApartmentIcon from '@mui/icons-material/ApartmentOutlined';
+import PageHeader from '../../components/PageHeader';
+import EmptyState from '../../components/EmptyState';
+import LoadingState from '../../components/LoadingState';
 
 function AllProperties() {
     const [properties, setProperties] = useState([]);
@@ -34,51 +37,44 @@ function AllProperties() {
     };
 
     return (
-        <div>
-            <Container>
-                <Grid container spacing={2} justifyContent="center" alignItems="center">
-                    <Grid item xs={12}>
-                        <Typography variant="h4" align="center" gutterBottom>
-                            All Properties
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={12}>
-                        <Box>
-                            <Typography variant="h6" align="center" gutterBottom>
-                                {isLoading && <CircularProgress />}
-                            </Typography>
-                        </Box>
-                    </Grid>
-                    <Grid item xs={12}>
-                        <Box>
-                            <Typography variant="h6" align="center" gutterBottom>
-                                {error && <p>{error}</p>}
-                            </Typography>
-                        </Box>
-                    </Grid>
-                    <Grid item xs={12}>
-                        <Box>
-                            <Typography variant="h6" align="center" gutterBottom>
-                                {properties.map((property) => (
-                                    <div key={property.id}>
-                                        <h2>{property.name}</h2>
-                                        <p>{property.description}</p>
-                                        <p>{property.price}</p>
-                                    </div>
-                                ))}
-                            </Typography>
-                        </Box>
-                    </Grid>
-                    <Grid item xs={12}>
-                        <Box>
-                            <Button variant="contained" onClick={handleFetchProperties}>
-                                Fetch Properties
-                            </Button>
-                        </Box>
-                    </Grid>
+        <Container maxWidth="lg">
+            <PageHeader
+                title="All Properties"
+                actions={
+                    <Button variant="contained" startIcon={<RefreshIcon />} onClick={handleFetchProperties} disabled={isLoading}>
+                        Fetch Properties
+                    </Button>
+                }
+            />
+
+            {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+
+            {isLoading ? (
+                <LoadingState />
+            ) : properties.length > 0 ? (
+                <Grid container spacing={2.5}>
+                    {properties.map((property) => (
+                        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={property.id}>
+                            <Card sx={{ height: '100%' }}>
+                                <CardContent>
+                                    <Typography variant="h6" gutterBottom>{property.name}</Typography>
+                                    <Typography variant="body2" color="text.secondary">{property.description}</Typography>
+                                    <Typography variant="subtitle1" color="primary" sx={{ mt: 1.5, fontWeight: 700 }}>
+                                        {property.price}
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    ))}
                 </Grid>
-            </Container>
-        </div>
+            ) : (
+                <EmptyState
+                    icon={<ApartmentIcon fontSize="large" />}
+                    title="Nothing loaded yet"
+                    description="Fetch your properties to see them here."
+                />
+            )}
+        </Container>
     )
 };
 

@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { Typography, Container, Grid, Box, TextField, Button, CircularProgress, Paper } from '@mui/material';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useState } from "react";
+import { Container, Grid, Box, TextField, Button, CircularProgress, Card, CardContent } from '@mui/material';
+import { toast } from 'react-toastify';
 import FetchWithAuth from "../../utils/FetchWithAuthentication";
+import PageHeader from '../../components/PageHeader';
 import withAuth from "../../utils/ifNotLoggedIn";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -62,52 +62,58 @@ function UpdateInfo() {
         };
     };
 
-    // must be responsive.
     return (
-        <div style={{ minHeight: '100vh', padding: '20px' }}>
-            <Container maxWidth="sm">
-                <Paper elevation={3} style={{ padding: '20px', marginTop: '20px' }}>
-                    <Typography variant="h4" align="center" gutterBottom>
-                        Update Profile
-                    </Typography>
+        <Container maxWidth="sm">
+            <PageHeader
+                backTo="/profile"
+                backLabel="Profile"
+                title="Update profile"
+                subtitle="Change the name shown on your account."
+            />
+            <Card>
+                <CardContent sx={{ p: { xs: 3, sm: 4 }, '&:last-child': { pb: { xs: 3, sm: 4 } } }}>
                     <form onSubmit={handleUpdateInfo}>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12}>
+                        <Grid container spacing={2.5}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
                                 <TextField
                                     label="First Name"
                                     variant="outlined"
                                     fullWidth
+                                    autoComplete="given-name"
                                     name="firstName"
                                     value={userData.firstName}
                                     onChange={handleChange}
                                 />
                             </Grid>
-                            <Grid item xs={12}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
                                 <TextField
                                     label="Last Name"
                                     variant="outlined"
                                     fullWidth
+                                    autoComplete="family-name"
                                     name="lastName"
                                     value={userData.lastName}
                                     onChange={handleChange}
                                 />
                             </Grid>
-                            <Grid item xs={12} style={{ textAlign: 'center' }}>
-                                <Button
-                                    type="submit"
-                                    variant="contained"
-                                    color="primary"
-                                    disabled={isLoading}
-                                >
-                                    {isLoading ? <CircularProgress size={24} /> : "Update"}
-                                </Button>
+                            <Grid size={12}>
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                    <Button
+                                        type="submit"
+                                        variant="contained"
+                                        color="primary"
+                                        disabled={isLoading}
+                                        sx={{ minWidth: 140 }}
+                                    >
+                                        {isLoading ? <CircularProgress size={24} color="inherit" /> : "Save changes"}
+                                    </Button>
+                                </Box>
                             </Grid>
                         </Grid>
                     </form>
-                </Paper>
-            </Container>
-            <ToastContainer autoClose={3000} />
-        </div>
+                </CardContent>
+            </Card>
+        </Container>
     );
 }
 

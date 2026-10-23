@@ -1,110 +1,46 @@
-import React, { useState } from 'react';
-import { makeStyles } from '@mui/styles';
-import { Drawer, List, ListItem, ListItemIcon, ListItemText, IconButton } from '@mui/material';
-import InboxIcon from '@mui/icons-material/Inbox';
-import MailIcon from '@mui/icons-material/Mail';
-import MenuIcon from '@mui/icons-material/Menu';
-import ProfileIcon from '@mui/icons-material/AccountCircle';
-import CloseIcon from '@mui/icons-material/Close'; // Import CloseIcon
-import SettingsIcon from '@mui/icons-material/Settings';
-import { Link } from 'react-router-dom';
+import { Box, Divider, Drawer, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import { Link } from 'react-router';
+import Brand from './Brand';
 
-const useStyles = makeStyles((theme) => ({
-    drawer: {
-        width: 240,
-        flexShrink: 0,
-        [theme.breakpoints.down('sm')]: {
-            display: 'block',
-        },
-    },
-    drawerPaper: {
-        width: 240,
-    },
-    toolbar: theme.mixins.toolbar,
-    menuButton: {
-        marginRight: theme.spacing(2),
-        [theme.breakpoints.up('sm')]: {
-            display: 'none',
-        },
-    },
-    hide: {
-        display: 'none',
-    },
-    closeButton: {
-        margin: theme.spacing(1),
-        [theme.breakpoints.up('sm')]: {
-            display: 'none',
-        },
-    },
-}));
-
-const SideBar = () => {
-    const classes = useStyles();
-    const [isOpen, setIsOpen] = useState(false); // State variable to track sidebar visibility
-
-    const toggleSidebar = () => {
-        setIsOpen(!isOpen);
-    };
-
+// Slide-out navigation drawer. The header owns the open state and the list of items.
+const SideBar = ({ open, onClose, items, isActive }) => {
     return (
-        <>
-            <IconButton
-                color="inherit"
-                aria-label="open drawer"
-                onClick={toggleSidebar}
-                edge="start"
-                className={classes.menuButton}
-            >
-                <MenuIcon />
-            </IconButton>
-            <Drawer
-                className={classes.drawer}
-                variant="temporary"
-                classes={{
-                    paper: classes.drawerPaper,
-                }}
-                open={isOpen} 
-                onClose={toggleSidebar}
-                ModalProps={{
-                    keepMounted: true, // this will make it perform better on mobile.
-                }}
-            >
-                <div className={classes.toolbar} />
-                <IconButton
-                    edge="start"
-                    className={classes.closeButton}
-                    onClick={toggleSidebar}
-                >
-                    <CloseIcon />
+        <Drawer
+            variant="temporary"
+            open={open}
+            onClose={onClose}
+            ModalProps={{
+                keepMounted: true, // this will make it perform better on mobile.
+            }}
+            slotProps={{ paper: { sx: { width: 280 } } }}
+        >
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2.5, py: 2 }}>
+                <Brand onClick={onClose} />
+                <IconButton onClick={onClose} aria-label="Close menu" size="small">
+                    <CloseIcon fontSize="small" />
                 </IconButton>
-                <List>
-                    <ListItem button component={Link} to="/home">
-                        <ListItemIcon>
-                            <InboxIcon />
-                        </ListItemIcon>
-                        <ListItemText primary="Home" />
-                    </ListItem>
-                    <ListItem button component={Link} to="/profile">
-                        <ListItemIcon>
-                            <ProfileIcon />
-                        </ListItemIcon>
-                        <ListItemText primary="Profile" />
-                    </ListItem>
-                    <ListItem button component={Link} to="/settings">
-                        <ListItemIcon>
-                            <SettingsIcon />
-                        </ListItemIcon>
-                        <ListItemText primary="Settings" />
-                    </ListItem>
-                    <ListItem button component={Link} to="/faq">
-                        <ListItemIcon>
-                            <MailIcon />
-                        </ListItemIcon>
-                        <ListItemText primary="FAQ" />
-                    </ListItem>
-                </List>
-            </Drawer>
-        </>
+            </Box>
+            <Divider />
+            <Typography variant="overline" color="text.secondary" sx={{ px: 3, pt: 2.5, pb: 0.5 }}>
+                Navigation
+            </Typography>
+            <List sx={{ px: 1.5 }}>
+                {items.map(({ label, to, icon }) => (
+                    <ListItemButton
+                        key={to}
+                        component={Link} nativeButton={false}
+                        to={to}
+                        selected={isActive(to)}
+                        onClick={onClose}
+                        sx={{ mb: 0.5 }}
+                    >
+                        <ListItemIcon sx={{ minWidth: 40 }}>{icon}</ListItemIcon>
+                        <ListItemText primary={label} slotProps={{ primary: { sx: { fontWeight: 500 } } }} />
+                    </ListItemButton>
+                ))}
+            </List>
+        </Drawer>
     );
 };
 

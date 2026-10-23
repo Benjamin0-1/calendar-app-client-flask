@@ -1,9 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { CircularProgress, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import { toast } from 'react-toastify';
 import FetchWithAuth from "../../utils/FetchWithAuthentication";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -12,7 +9,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 function UpdateBooking({open, onClose, propertyId, dateToBeUpdated}) {
     const [form, setForm] = useState({
         customerName: "",
-        date: null,
+        date: "", // yyyy-MM-dd, the format <input type="date"> produces.
     });
     const [isLoading, setIsLoading] = useState(false);
 
@@ -36,7 +33,7 @@ function UpdateBooking({open, onClose, propertyId, dateToBeUpdated}) {
                 },
                 body: JSON.stringify({
                     customerName: form.customerName,
-                    date: form.date ? form.date.toISOString().split('T')[0] : "", // YY-MM-DD.
+                    date: form.date, // already yyyy-MM-dd.
                 }),
             });
            
@@ -66,13 +63,13 @@ function UpdateBooking({open, onClose, propertyId, dateToBeUpdated}) {
 
     // responsive JSX here.
     return (
-        <Dialog open={open} onClose={onClose}>
-            <DialogTitle>Update Booking</DialogTitle>
+        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+            <DialogTitle>Update booking</DialogTitle>
             <DialogContent>
                 <form>
                     <TextField
                         autoFocus
-                        margin="dense"
+                        margin="normal"
                         id="customerName"
                         name="customerName"
                         label="Customer Name"
@@ -81,20 +78,23 @@ function UpdateBooking({open, onClose, propertyId, dateToBeUpdated}) {
                         value={form.customerName}
                         onChange={handleInputChange}
                     />
-                    <DatePicker
-                        selected={form.date}
-                        onChange={(date) => setForm((prevForm) => ({
-                            ...prevForm,
-                            date: date,
-                        }))}
-                        dateFormat="yyyy-MM-dd"
+                    <TextField
+                        margin="normal"
+                        id="date"
+                        name="date"
+                        label="Date"
+                        type="date"
+                        fullWidth
+                        value={form.date}
+                        onChange={handleInputChange}
+                        slotProps={{ inputLabel: { shrink: true } }}
                     />
                 </form>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose}>Cancel</Button>
-                <Button onClick={handleUpdate} color="primary" disabled={isLoading}>
-                    {isLoading ? <CircularProgress size={24} /> : "Update"}
+                <Button onClick={onClose} color="inherit">Cancel</Button>
+                <Button onClick={handleUpdate} variant="contained" color="primary" disabled={isLoading}>
+                    {isLoading ? <CircularProgress size={24} color="inherit" /> : "Update"}
                 </Button>
             </DialogActions>
         </Dialog>

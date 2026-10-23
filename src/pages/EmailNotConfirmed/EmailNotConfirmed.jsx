@@ -1,21 +1,19 @@
-import React, { useState } from "react";
-import { Container, Typography, Button, Box, Paper, useMediaQuery, TextField } from '@mui/material';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { useNavigate } from "react-router-dom";
-import EmailIcon from '@mui/icons-material/Email';
-import { useTheme } from '@mui/material/styles';
+import { useState } from "react";
+import { Button, Box, Stack, TextField, CircularProgress } from '@mui/material';
+import { toast } from 'react-toastify';
+import { useNavigate } from "react-router";
+import MarkEmailUnreadIcon from '@mui/icons-material/MarkEmailUnreadOutlined';
+import AuthCard from '../../components/AuthCard';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 function EmailNotConfirmed() {
     const navigate = useNavigate();
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [email, setEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
     const handleResendConfirmation = async () => {
+        setIsLoading(true);
         try {
             const response = await fetch(`${API_URL}/auth/resend-email-confirmation`, {
                 method: "POST",
@@ -35,44 +33,44 @@ function EmailNotConfirmed() {
         } catch (err) {
             toast.error("Failed to resend confirmation email.");
             console.log(`Error resending confirmation email: ${err}`);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
-        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f5f5f5', padding: isMobile ? '10px' : '20px' }}>
-            <Container maxWidth="sm">
-                <Paper elevation={6} style={{ padding: isMobile ? '20px' : '30px', textAlign: 'center' }}>
-                    <Box display="flex" flexDirection="column" alignItems="center">
-                        <EmailIcon color="primary" style={{ fontSize: 60, marginBottom: 20 }} />
-                        <Typography variant={isMobile ? "h5" : "h4"} gutterBottom>
-                            Email Not Confirmed
-                        </Typography>
-                        <Typography variant="body1" color="textSecondary" paragraph>
-                            Your email address has not been confirmed yet. Please check your inbox for a confirmation email.
-                        </Typography>
-                        <Box mt={3} mb={2} width="100%">
-                            <TextField
-                                label="Email"
-                                variant="outlined"
-                                fullWidth
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
-                        </Box>
-                        <Box mt={2} mb={2} width="100%">
-                            <Button variant="contained" color="primary" onClick={handleResendConfirmation} fullWidth={isMobile}>
-                                Resend Confirmation Email
-                            </Button>
-                        </Box>
-                        <Button variant="outlined" color="secondary" onClick={() => navigate('/login')} fullWidth={isMobile}>
-                            Go to Login
-                        </Button>
-                        {isLoading && <Typography variant="body2" color="textSecondary" paragraph style={{ marginTop: 10 }}>Loading...</Typography>}
-                    </Box>
-                </Paper>
-            </Container>
-            <ToastContainer autoClose={3000} />
-        </div>
+        <AuthCard
+            icon={<MarkEmailUnreadIcon />}
+            iconColor="warning"
+            title="Confirm your email"
+            subtitle="Your email address hasn't been confirmed yet. Check your inbox for the confirmation link, or request a new one below."
+        >
+            <Box
+                component="form"
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    handleResendConfirmation();
+                }}
+            >
+                <Stack spacing={2}>
+                    <TextField
+                        label="Email"
+                        type="email"
+                        autoComplete="email"
+                        variant="outlined"
+                        fullWidth
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
+                    <Button type="submit" variant="contained" color="primary" size="large" fullWidth disabled={isLoading}>
+                        {isLoading ? <CircularProgress size={24} color="inherit" /> : "Resend confirmation email"}
+                    </Button>
+                    <Button variant="text" color="inherit" onClick={() => navigate('/login')} fullWidth sx={{ color: 'text.secondary' }}>
+                        Back to log in
+                    </Button>
+                </Stack>
+            </Box>
+        </AuthCard>
     );
 }
 

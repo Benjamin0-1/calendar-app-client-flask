@@ -1,9 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { Container, Typography, Grid, Box, CircularProgress, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useState, useEffect } from "react";
+import { Container, Typography, Grid, Button, Card, CardContent, CardActions, Chip, Stack,
+    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { toast } from 'react-toastify';
+import { format } from 'date-fns';
 import FetchWithAuth from "../../utils/FetchWithAuthentication";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForeverOutlined';
+import DeleteSweepIcon from '@mui/icons-material/DeleteSweepOutlined';
+import ApartmentIcon from '@mui/icons-material/ApartmentOutlined';
+import EventIcon from '@mui/icons-material/EventOutlined';
+import PageHeader from '../../components/PageHeader';
+import EmptyState from '../../components/EmptyState';
+import LoadingState from '../../components/LoadingState';
+import { parseBookingDate } from '../../utils/dates';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -137,75 +146,91 @@ function DeletedDate() {
     };
 
     return (
-        <Container>
-            <Typography variant="h4" gutterBottom>
-                Deleted Dates: {deletedDates.length}
-            </Typography>
-            {/* Conditionally render the button based on deletedDates length */}
-            {deletedDates.length > 0 && (
-                <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={() => setShowDeleteAllDialog(true)}
-                    style={{ marginBottom: '20px' }}
-                >
-                    Delete All Deleted Dates
-                </Button>
-            )}
+        <Container maxWidth="lg">
+            <PageHeader
+                backTo="/settings"
+                backLabel="Settings"
+                title="Deleted bookings"
+                subtitle={`${deletedDates.length} deleted ${deletedDates.length === 1 ? 'booking' : 'bookings'}. Removing them here deletes them permanently.`}
+                actions={
+                    deletedDates.length > 0 && (
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            startIcon={<DeleteSweepIcon />}
+                            onClick={() => setShowDeleteAllDialog(true)}
+                        >
+                            Delete All Deleted Dates
+                        </Button>
+                    )
+                }
+            />
             {isLoading ? (
-                <Box display="flex" justifyContent="center" alignItems="center" height="60vh">
-                    <CircularProgress />
-                </Box>
+                <LoadingState label="Loading deleted bookings" />
             ) : deletedDates.length === 0 ? (
-                <Typography variant="h1" align="center" color="textSecondary">
-                    No deleted dates found
-                </Typography>
+                <EmptyState
+                    icon={<DeleteSweepIcon fontSize="large" />}
+                    title="No deleted dates found"
+                    description="Bookings you delete from a property will show up here."
+                />
             ) : (
-                <Grid container spacing={3}>
-                    {deletedDates.map((date) => (
-                        <Grid item xs={12} sm={6} md={4} key={date.id}>
-                            <Box
-                                sx={{
-                                    border: '1px solid #ddd',
-                                    borderRadius: '8px',
-                                    padding: '16px',
-                                    height: '100%',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    justifyContent: 'center',
-                                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                                }}
-                            >
-                                <Typography variant="h6">Customer: {date.customerName}</Typography>
-                                <Typography color="textSecondary">Date: {date.date}</Typography>
-                                <Typography variant="body2">Property: {date.propertyName}</Typography>
-                                <Button
-                                    variant="contained"
-                                    color="error"
-                                    onClick={() => openDeleteDialog(date.id)}
-                                    style={{ marginTop: '10px' }}
-                                >
-                                    Delete
-                                </Button>
-                            </Box>
-                        </Grid>
-                    ))}
+                <Grid container spacing={2.5}>
+                    {deletedDates.map((date) => {
+                        const parsedDate = parseBookingDate(date.date);
+
+                        return (
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={date.id}>
+                                <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                                    <CardContent sx={{ flex: 1 }}>
+                                        <Typography variant="h6" noWrap title={date.customerName}>
+                                            {date.customerName}
+                                        </Typography>
+                                        <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', mt: 1, color: 'text.secondary' }}>
+                                            <EventIcon sx={{ fontSize: 18 }} />
+                                            <Typography variant="body2">
+                                                {parsedDate ? format(parsedDate, 'EEE, MMM d, yyyy') : date.date}
+                                            </Typography>
+                                        </Stack>
+                                        <Chip
+                                            size="small"
+                                            variant="outlined"
+                                            icon={<ApartmentIcon />}
+                                            label={date.propertyName}
+                                            sx={{ mt: 1.5, maxWidth: '100%' }}
+                                        />
+                                    </CardContent>
+                                    <CardActions sx={{ px: 2, pb: 2, pt: 0 }}>
+                                        <Button
+                                            size="small"
+                                            color="error"
+                                            startIcon={<DeleteForeverIcon fontSize="small" />}
+                                            onClick={() => openDeleteDialog(date.id)}
+                                        >
+                                            Delete permanently
+                                        </Button>
+                                    </CardActions>
+                                </Card>
+                            </Grid>
+                        );
+                    })}
                 </Grid>
             )}
             <Dialog
                 open={showDeleteDialog}
                 onClose={() => setShowDeleteDialog(false)}
                 aria-labelledby="delete-dialog-title"
+                maxWidth="xs"
+                fullWidth
             >
-                <DialogTitle id="delete-dialog-title">Delete Booking</DialogTitle>
+                <DialogTitle id="delete-dialog-title">Delete booking permanently?</DialogTitle>
                 <DialogContent>
-                    <Typography>Are you sure you want to delete this booking? This action cannot be undone.</Typography>
+                    <DialogContentText>Are you sure you want to delete this booking? This action cannot be undone.</DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setShowDeleteDialog(false)} color="primary">
+                    <Button onClick={() => setShowDeleteDialog(false)} color="inherit">
                         Cancel
                     </Button>
-                    <Button onClick={handleDeleteBookingById} color="secondary">
+                    <Button onClick={handleDeleteBookingById} variant="contained" color="error" disabled={isLoading}>
                         Delete
                     </Button>
                 </DialogActions>
@@ -214,31 +239,24 @@ function DeletedDate() {
                 open={showDeleteAllDialog}
                 onClose={() => setShowDeleteAllDialog(false)}
                 aria-labelledby="delete-all-dialog-title"
+                maxWidth="xs"
+                fullWidth
             >
-                <DialogTitle id="delete-all-dialog-title">Delete All Deleted Dates</DialogTitle>
+                <DialogTitle id="delete-all-dialog-title">Delete all deleted bookings?</DialogTitle>
                 <DialogContent>
-                    <Typography>Are you sure you want to delete all deleted dates? This action cannot be undone.</Typography>
+                    <DialogContentText>
+                        All {deletedDates.length} deleted bookings will be removed permanently. This action cannot be undone.
+                    </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setShowDeleteAllDialog(false)} color="primary">
+                    <Button onClick={() => setShowDeleteAllDialog(false)} color="inherit">
                         Cancel
                     </Button>
-                    <Button onClick={handleDeleteAllDeletedDates} color="secondary">
+                    <Button onClick={handleDeleteAllDeletedDates} variant="contained" color="error">
                         Delete All
                     </Button>
                 </DialogActions>
             </Dialog>
-            <ToastContainer
-                position="top-right"
-                autoClose={3000} // Set default autoClose duration for all toasts
-                hideProgressBar
-                newestOnTop
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-            />
         </Container>
     );
 }

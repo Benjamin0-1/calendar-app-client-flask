@@ -1,9 +1,10 @@
-import React, { useState } from "react";
-import { Typography, Container, Grid, Box, TextField, Button, CircularProgress, Paper } from '@mui/material';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useState } from "react";
+import { Container, Grid, Box, Button, CircularProgress, Card, CardContent } from '@mui/material';
+import { toast } from 'react-toastify';
 import FetchWithAuth from "../../utils/FetchWithAuthentication";
-import { useNavigate } from "react-router-dom";
+import PageHeader from '../../components/PageHeader';
+import PasswordField from '../../components/PasswordField';
+import { useNavigate } from "react-router";
 import withAuth from "../../utils/ifNotLoggedIn";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -66,18 +67,21 @@ function UpdatePassword() {
     };
 
     return (
-        <div style={{ minHeight: '100vh', padding: '20px' }}>
-            <Container maxWidth="sm">
-                <Paper elevation={3} style={{ padding: '20px', marginTop: '20px' }}>
-                    <Typography variant="h4" align="center" gutterBottom>
-                        Update Password
-                    </Typography>
+        <Container maxWidth="sm">
+            <PageHeader
+                backTo="/profile"
+                backLabel="Profile"
+                title="Change password"
+                subtitle="Enter your current password, then choose a new one."
+            />
+            <Card>
+                <CardContent sx={{ p: { xs: 3, sm: 4 }, '&:last-child': { pb: { xs: 3, sm: 4 } } }}>
                     <form onSubmit={handleSubmit}>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12}>
-                                <TextField
+                        <Grid container spacing={2.5}>
+                            <Grid size={12}>
+                                <PasswordField
                                     label="Current Password"
-                                    type="password"
+                                    autoComplete="current-password"
                                     variant="outlined"
                                     fullWidth
                                     name="currentPassword"
@@ -86,10 +90,10 @@ function UpdatePassword() {
                                     required
                                 />
                             </Grid>
-                            <Grid item xs={12}>
-                                <TextField
+                            <Grid size={12}>
+                                <PasswordField
                                     label="New Password"
-                                    type="password"
+                                    autoComplete="new-password"
                                     variant="outlined"
                                     fullWidth
                                     name="newPassword"
@@ -98,10 +102,10 @@ function UpdatePassword() {
                                     required
                                 />
                             </Grid>
-                            <Grid item xs={12}>
-                                <TextField
+                            <Grid size={12}>
+                                <PasswordField
                                     label="Confirm New Password"
-                                    type="password"
+                                    autoComplete="new-password"
                                     variant="outlined"
                                     fullWidth
                                     name="confirmNewPassword"
@@ -110,22 +114,24 @@ function UpdatePassword() {
                                     required
                                 />
                             </Grid>
-                            <Grid item xs={12} style={{ textAlign: 'center' }}>
-                                <Button
-                                    type="submit"
-                                    variant="contained"
-                                    color="primary"
-                                    disabled={isLoading}
-                                >
-                                    {isLoading ? <CircularProgress size={24} /> : "Update Password"}
-                                </Button>
+                            <Grid size={12}>
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                    <Button
+                                        type="submit"
+                                        variant="contained"
+                                        color="primary"
+                                        disabled={isLoading}
+                                        sx={{ minWidth: 170 }}
+                                    >
+                                        {isLoading ? <CircularProgress size={24} color="inherit" /> : "Update Password"}
+                                    </Button>
+                                </Box>
                             </Grid>
                         </Grid>
                     </form>
-                </Paper>
-            </Container>
-            <ToastContainer autoClose={3000} />
-        </div>
+                </CardContent>
+            </Card>
+        </Container>
     );
 }
 

@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { Typography, Container, Grid, Box, CircularProgress, Paper, Button } from '@mui/material';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useState, useEffect } from "react";
+import { Typography, Container, Box, Card, Avatar, Button, Divider, Alert, Stack } from '@mui/material';
+import { toast } from 'react-toastify';
+import EditIcon from '@mui/icons-material/EditOutlined';
+import KeyIcon from '@mui/icons-material/KeyOutlined';
 import FetchWithAuth from "../../utils/FetchWithAuthentication";
-import { useNavigate } from "react-router-dom";
+import PageHeader from '../../components/PageHeader';
+import LoadingState from '../../components/LoadingState';
+import { useNavigate } from "react-router";
 //import withAuth from "../../utils/ifNotLoggedIn";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -58,45 +61,105 @@ function Profile() {
     }, [navigate]);
 
     return (
-        <div style={{ minHeight: '100vh', padding: '20px' }}>
-            <Container maxWidth="md">
-                <Paper elevation={3} style={{ padding: '20px', marginTop: '20px' }}>
-                    <Typography variant="h4" align="center" gutterBottom>
-                        Profile
-                    </Typography>
-                    <Grid container spacing={2} justifyContent="center" alignItems="center">
-                        <Grid item xs={12}>
-                            {isLoading && <CircularProgress style={{ display: 'block', margin: 'auto' }} />}
-                            {error && <Typography variant="h6" color="error" align="center">{error}</Typography>}
-                            {userData && (
-                                <Box display="flex" flexDirection="column" alignItems="center" mb={2}>
-                                    <Typography variant="h6" gutterBottom>First Name: {userData.firstName}</Typography>
-                                    <Typography variant="h6" gutterBottom>Last Name: {userData.lastName}</Typography>
-                                    <Typography variant="h6" gutterBottom>Email: {userData.email}</Typography>
-                                </Box>
-                            )}
-                            <Box display="flex" justifyContent="center" gap={2}>
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={() => navigate('/profile/update-info')}
-                                >
-                                    Update Info
-                                </Button>
-                                <Button
-                                    variant="contained"
-                                    color="secondary"
-                                    onClick={() => navigate('/profile/change-password')}
-                                >
-                                    Change Password
-                                </Button>
+        <Container maxWidth="md">
+            <PageHeader eyebrow="Account" title="Profile" subtitle="Your personal details and sign-in settings." />
+
+            {isLoading && <LoadingState label="Loading profile" />}
+            {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+
+            {userData && (
+                <Card>
+                    <Box
+                        sx={(theme) => ({
+                            height: 96,
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                        })}
+                    />
+                    <Box sx={{ px: { xs: 3, sm: 4 }, pb: 3 }}>
+                        <Stack
+                            direction={{ xs: 'column', sm: 'row' }}
+                            spacing={2}
+                            sx={{ alignItems: 'flex-start', mt: -5 }}
+                        >
+                            <Avatar
+                                sx={{
+                                    width: 88,
+                                    height: 88,
+                                    fontSize: '2rem',
+                                    fontWeight: 700,
+                                    bgcolor: 'background.paper',
+                                    color: 'primary.main',
+                                    border: 4,
+                                    borderColor: 'background.paper',
+                                    boxShadow: 2,
+                                }}
+                            >
+                                {`${userData.firstName?.[0] ?? ''}${userData.lastName?.[0] ?? ''}`.toUpperCase()}
+                            </Avatar>
+                            <Box sx={{ flex: 1, minWidth: 0, pt: { sm: 6 } }}>
+                                <Typography variant="h5" noWrap>
+                                    {userData.firstName} {userData.lastName}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary" noWrap>
+                                    {userData.email}
+                                </Typography>
                             </Box>
-                        </Grid>
-                    </Grid>
-                </Paper>
-            </Container>
-            <ToastContainer autoClose={3000} />
-        </div>
+                        </Stack>
+                    </Box>
+
+                    <Divider />
+
+                    <Box component="dl" sx={{ m: 0, px: { xs: 3, sm: 4 } }}>
+                        {[
+                            ['First name', userData.firstName],
+                            ['Last name', userData.lastName],
+                            ['Email', userData.email],
+                        ].map(([label, value], index) => (
+                            <Box
+                                key={label}
+                                sx={{
+                                    display: 'grid',
+                                    gridTemplateColumns: { xs: '1fr', sm: '180px 1fr' },
+                                    gap: { xs: 0.25, sm: 2 },
+                                    py: 2,
+                                    borderTop: index === 0 ? 0 : 1,
+                                    borderColor: 'divider',
+                                }}
+                            >
+                                <Typography component="dt" variant="body2" color="text.secondary">
+                                    {label}
+                                </Typography>
+                                <Typography component="dd" variant="body1" sx={{ m: 0, fontWeight: 500, wordBreak: 'break-word' }}>
+                                    {value}
+                                </Typography>
+                            </Box>
+                        ))}
+                    </Box>
+
+                    <Divider />
+
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ p: { xs: 3, sm: 4 }, py: { sm: 2.5 } }}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<EditIcon />}
+                            onClick={() => navigate('/profile/update-info')}
+                        >
+                            Update Info
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            color="inherit"
+                            startIcon={<KeyIcon />}
+                            onClick={() => navigate('/profile/change-password')}
+                            sx={{ borderColor: 'divider' }}
+                        >
+                            Change Password
+                        </Button>
+                    </Stack>
+                </Card>
+            )}
+        </Container>
     );
 }
 //export default withAuth(Profile);

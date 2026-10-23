@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { Typography, Container, Grid, CircularProgress, Box, Button, TextField } from '@mui/material';
-import { ToastContainer, toast } from 'react-toastify';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { CircularProgress, Box, Button, TextField, Stack } from '@mui/material';
+import { toast } from 'react-toastify';
+import LockResetIcon from '@mui/icons-material/LockReset';
+import AuthCard from '../../components/AuthCard';
+import PasswordField from '../../components/PasswordField';
+import { useNavigate, useLocation } from 'react-router';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -62,53 +65,50 @@ function ResetPassword() {
     };
 
     return (
-        <Container>
-            <Typography variant="h4" align="center" gutterBottom>Update Password</Typography>
-            <Grid container justifyContent="center">
-                <Grid item xs={12} md={6}>
-                    <form onSubmit={handleResetPassword}>
-                        <TextField
-                            label="OTP"
-                            type="text"
-                            variant="outlined"
-                            margin="normal"
-                            fullWidth
-                            value={otp}
-                            onChange={(e) => setOtp(e.target.value)}
-                        />
-                        <TextField
-                            label="New Password"
-                            type="password"
-                            variant="outlined"
-                            margin="normal"
-                            fullWidth
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                        />
-                        <TextField
-                            label="Confirm New Password"
-                            type="password"
-                            variant="outlined"
-                            margin="normal"
-                            fullWidth
-                            value={confirmNewPassword}
-                            onChange={(e) => setConfirmNewPassword(e.target.value)}
-                        />
-                        <Box mt={2}>
-                            <Button
-                                type="submit"
-                                variant="contained"
-                                color="primary"
-                                disabled={isLoading}
-                            >
-                                {isLoading ? <CircularProgress size={24} /> : "Update Password"}
-                            </Button>
-                        </Box>
-                    </form>
-                </Grid>
-            </Grid>
-            <ToastContainer autoClose={1500} />
-        </Container>
+        <AuthCard
+            icon={<LockResetIcon />}
+            title="Set a new password"
+            subtitle={email ? `Choose a new password for ${email}.` : "Choose a new password for your account."}
+        >
+            <Box component="form" onSubmit={handleResetPassword}>
+                <Stack spacing={2.5}>
+                    <TextField
+                        label="OTP"
+                        type="text"
+                        variant="outlined"
+                        fullWidth
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                    />
+                    <PasswordField
+                        label="New Password"
+                        autoComplete="new-password"
+                        variant="outlined"
+                        fullWidth
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                    />
+                    <PasswordField
+                        label="Confirm New Password"
+                        autoComplete="new-password"
+                        variant="outlined"
+                        fullWidth
+                        value={confirmNewPassword}
+                        onChange={(e) => setConfirmNewPassword(e.target.value)}
+                    />
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        size="large"
+                        fullWidth
+                        disabled={isLoading}
+                    >
+                        {isLoading ? <CircularProgress size={24} color="inherit" /> : "Update Password"}
+                    </Button>
+                </Stack>
+            </Box>
+        </AuthCard>
     );
 }
 

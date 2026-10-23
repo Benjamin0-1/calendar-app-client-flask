@@ -1,6 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { TextField, Button, Typography, Container, Grid, Box, CircularProgress } from '@mui/material';
-import { ToastContainer, toast } from 'react-toastify';
+import { useState, useEffect } from "react";
+import { TextField, Button, Typography, Box, CircularProgress, Stack, Link as MuiLink } from '@mui/material';
+import { toast } from 'react-toastify';
+import { Link } from 'react-router';
+import KeyIcon from '@mui/icons-material/KeyOutlined';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import AuthCard from '../../components/AuthCard';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -90,40 +94,57 @@ function RequestPasswordReset() {
     };
 
     return (
-        <Container maxWidth="sm">
-            <Box sx={{ marginTop: 4 }}>
-                <Typography variant="h4" align="center" gutterBottom>
-                    Request Password Reset
-                </Typography>
-                <Grid container spacing={2}>
-                    <Grid item xs={12}>
-                        <TextField
-                            label="Email"
-                            variant="outlined"
-                            fullWidth
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            fullWidth
-                            disabled={isLoading || tooManyRequests}
-                            onClick={handleRequestPasswordReset}
-                        >
-                            {isLoading ? (
-                                <CircularProgress size={24} color="inherit" />
-                            ) : (
-                                `Request Reset ${tooManyRequests ? `(${countdown}s)` : ""}`
-                            )}
-                        </Button>
-                    </Grid>
-                </Grid>
+        <AuthCard
+            icon={<KeyIcon />}
+            title="Forgot your password?"
+            subtitle="Enter the email you signed up with and we'll send you a link to reset it."
+            footer={
+                <MuiLink
+                    component={Link}
+                    to="/login"
+                    variant="body2"
+                    underline="hover"
+                    sx={{ fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 0.75 }}
+                >
+                    <ArrowBackIcon sx={{ fontSize: 16 }} /> Back to log in
+                </MuiLink>
+            }
+        >
+            <Box
+                component="form"
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    handleRequestPasswordReset();
+                }}
+            >
+                <Stack spacing={2.5}>
+                    <TextField
+                        label="Email"
+                        type="email"
+                        autoComplete="email"
+                        variant="outlined"
+                        fullWidth
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        size="large"
+                        fullWidth
+                        disabled={isLoading || tooManyRequests}
+                    >
+                        {isLoading ? <CircularProgress size={24} color="inherit" /> : "Send reset link"}
+                    </Button>
+                    {tooManyRequests && (
+                        <Typography variant="body2" color="text.secondary" align="center">
+                            Link sent. You can request another in {countdown}s.
+                        </Typography>
+                    )}
+                </Stack>
             </Box>
-            <ToastContainer autoClose={1500} />
-        </Container>
+        </AuthCard>
     );
 };
 

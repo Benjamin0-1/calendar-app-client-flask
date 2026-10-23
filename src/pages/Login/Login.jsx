@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { Typography, Container, Grid, Box, CircularProgress, TextField, Button } from '@mui/material';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { Typography, Box, CircularProgress, TextField, Button, Alert, Divider, Stack, Link as MuiLink } from '@mui/material';
+import { toast } from 'react-toastify';
+import { useNavigate, Link } from 'react-router';
 import { auth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from '../../firebase.config';
 import GoogleIcon from '@mui/icons-material/Google';
+import LockIcon from '@mui/icons-material/LockOutlined';
+import AuthCard from '../../components/AuthCard';
+import PasswordField from '../../components/PasswordField';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -61,8 +63,7 @@ function Login() {
             }
 
             if (data.emailNotConfirmed) { 
-                window.location.href = 'emailnotconfirmed'
-                return;
+                navigate("/confirm-email");
             }
 
             if (data.error) {
@@ -149,87 +150,75 @@ function Login() {
     
     
     
-    // make sure this is responsive again.
     return (
-        <Container>
-            <Grid container spacing={2} justifyContent="center" alignItems="center">
-                <Grid item xs={12}>
-                    <Typography variant="h4" align="center" gutterBottom>
-                        Login
-                    </Typography>
-                </Grid>
-                <Grid item xs={12}>
-                    <form onSubmit={handleLogin}>
-                        <Box mb={2}>
-                            <TextField
-                                fullWidth
-                                type="email"
-                                label="Email"
-                                value={userData.email}
-                                onChange={(e) => setUserData({ ...userData, email: e.target.value })}
-                                required
-                            />
-                        </Box>
-                        <Box mb={2}>
-                            <TextField
-                                fullWidth
-                                type="password"
-                                label="Password"
-                                value={userData.password}
-                                onChange={(e) => setUserData({ ...userData, password: e.target.value })}
-                                required
-                            />
-                        </Box>
-                        <Box mb={2}>
-                            <Button
-                                type="submit"
-                                variant="contained"
-                                color="primary"
-                                fullWidth
-                                disabled={isLoading}
-                            >
-                                {isLoading ? <CircularProgress size={24} /> : "Login"}
-                            </Button>
-                        </Box>
-                    </form>
-                </Grid>
-                <Grid item xs={12}>
-                    {error && <Typography variant="h6" color="error">{error}</Typography>}
-                </Grid>
-                <Grid item xs={12}>
-                    <Button
-                        variant="outlined"
-                        startIcon={<GoogleIcon />}
+        <AuthCard
+            icon={<LockIcon />}
+            title="Welcome back"
+            subtitle="Log in to manage your properties and bookings."
+            footer={
+                <Typography variant="body2" color="text.secondary">
+                    Don&apos;t have an account?{' '}
+                    <MuiLink component={Link} to="/signup" underline="hover" sx={{ fontWeight: 600 }}>
+                        Create one
+                    </MuiLink>
+                </Typography>
+            }
+        >
+            {error && <Alert severity="error" sx={{ mb: 2.5 }}>{error}</Alert>}
+
+            <Button
+                variant="outlined"
+                color="inherit"
+                size="large"
+                startIcon={<GoogleIcon />}
+                fullWidth
+                onClick={handleGoogleLogin}
+                sx={{ borderColor: 'divider' }}
+            >
+                Continue with Google
+            </Button>
+
+            <Divider sx={{ my: 3, typography: 'caption', color: 'text.secondary' }}>or log in with email</Divider>
+
+            <Box component="form" onSubmit={handleLogin}>
+                <Stack spacing={2.5}>
+                    <TextField
                         fullWidth
-                        style={{ marginBottom: "10px" }}
-                        onClick={handleGoogleLogin}
-                    >
-                        Login with Google
-                    </Button>
-                </Grid>
-                <Grid item xs={12}>
+                        type="email"
+                        label="Email"
+                        autoComplete="email"
+                        value={userData.email}
+                        onChange={(e) => setUserData({ ...userData, email: e.target.value })}
+                        required
+                    />
+                    <Box>
+                        <PasswordField
+                            fullWidth
+                            label="Password"
+                            autoComplete="current-password"
+                            value={userData.password}
+                            onChange={(e) => setUserData({ ...userData, password: e.target.value })}
+                            required
+                        />
+                        <Box sx={{ textAlign: 'right', mt: 1 }}>
+                            <MuiLink component={Link} to="/request-password-reset" variant="body2" underline="hover" sx={{ fontWeight: 500 }}>
+                                Forgot password?
+                            </MuiLink>
+                        </Box>
+                    </Box>
                     <Button
-                        variant="text"
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        size="large"
                         fullWidth
-                        onClick={() => {navigate('/request-password-reset')}}
-                        style={{ marginBottom: "10px" }}
+                        disabled={isLoading}
                     >
-                        Forgot Password?
+                        {isLoading ? <CircularProgress size={24} color="inherit" /> : "Log in"}
                     </Button>
-                </Grid>
-                <Grid item xs={12}>
-                    <Button
-                        variant="text"
-                        fullWidth
-                        onClick={() => {navigate('/signup')}}
-                        style={{ marginBottom: "10px" }}
-                    >
-                        Don't have an account? Create one
-                    </Button>
-                </Grid>
-            </Grid>
-            <ToastContainer autoClose={1500} />
-        </Container>
+                </Stack>
+            </Box>
+        </AuthCard>
     );
     
 };

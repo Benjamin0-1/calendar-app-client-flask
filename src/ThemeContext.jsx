@@ -1,31 +1,30 @@
-import React, { createContext, useState, useMemo, useContext, useEffect } from 'react';
+import { createContext, useState, useMemo, useContext } from 'react';
 import { ThemeProvider, CssBaseline } from '@mui/material';
-import { lightTheme, darkTheme } from './theme';
+import { getTheme } from './theme';
 
 const ThemeToggleContext = createContext();
 
+// returns { mode, toggleTheme }
 export const useThemeToggle = () => useContext(ThemeToggleContext);
 
-
-
+// Reading the saved mode synchronously avoids rendering in light mode first and then flashing to dark.
+const getInitialMode = () => (window.localStorage.getItem('theme') === 'dark' ? 'dark' : 'light');
 
 export const ThemeToggleProvider = ({ children }) => {
-  const [darkMode, setDarkMode] = useState(false);
-
-  // it blinks for a second when the page is loaded, will fix this later.
-  useEffect(() => {
-    const currentTheme = window.localStorage.getItem('theme') || 'light';
-    setDarkMode(currentTheme === 'dark');
-  });
+  const [mode, setMode] = useState(getInitialMode);
 
   const toggleTheme = () => {
-    setDarkMode((prevMode) => !prevMode);
+    setMode((prevMode) => {
+      const newMode = prevMode === 'light' ? 'dark' : 'light';
+      window.localStorage.setItem('theme', newMode);
+      return newMode;
+    });
   };
 
-  const theme = useMemo(() => (darkMode ? darkTheme : lightTheme), [darkMode]);
+  const theme = useMemo(() => getTheme(mode), [mode]);
 
   return (
-    <ThemeToggleContext.Provider value={toggleTheme}>
+    <ThemeToggleContext.Provider value={{ mode, toggleTheme }}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         {children}

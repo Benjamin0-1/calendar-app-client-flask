@@ -1,15 +1,15 @@
-import React from 'react';
+import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 import './index.css';
 import { ThemeToggleProvider } from './ThemeContext';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+  <StrictMode>
     <ThemeToggleProvider>
       <App />
     </ThemeToggleProvider>
-  </React.StrictMode>
+  </StrictMode>
 );
 
 

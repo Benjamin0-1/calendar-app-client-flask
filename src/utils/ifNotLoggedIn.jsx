@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 import FetchWithAuth from "./FetchWithAuthentication";
+import LoadingState from "../components/LoadingState";
 
 
 // this function works along the FetchWithAuthentication one.
@@ -56,7 +57,7 @@ export default function withAuth(Component) {
         }, [navigate]);
 
         if (isAuthenticated === null) {
-            return <div>Loading...</div>; // or any loading component you prefer
+            return <LoadingState minHeight="60vh" />;
         }
 
         return isAuthenticated ? <Component {...props} /> : null;

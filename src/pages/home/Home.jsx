@@ -1,10 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { Typography, Container, Grid, Box, CircularProgress, Link as MuiLink } from '@mui/material';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useState, useEffect } from "react";
+import { Typography, Container, Grid, Box, Button, Card, CardActionArea, Avatar, Alert } from '@mui/material';
+import { alpha } from '@mui/material/styles';
+import { toast } from 'react-toastify';
 import FetchWithAuth from "../../utils/FetchWithAuthentication";
-import { useNavigate } from 'react-router-dom';
-import CreateProperty from "../CreateProperty/CreateProperty";
+import { useNavigate } from 'react-router';
+import AddIcon from '@mui/icons-material/Add';
+import ApartmentIcon from '@mui/icons-material/ApartmentOutlined';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import PageHeader from '../../components/PageHeader';
+import EmptyState from '../../components/EmptyState';
+import LoadingState from '../../components/LoadingState';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -87,82 +92,89 @@ const handleFetch = async () => {
     }, []);
 
     return (
-        <div style={{ minHeight: '100vh', padding: '20px' }}>
-            <Container maxWidth="md">
-                <Grid container spacing={3} justifyContent="center" alignItems="center">
-                    <Grid item xs={12}>
-                        <Typography variant="h4" align="center" gutterBottom>
-                            Your Properties: {responseData.length}
-                        </Typography>
-                    </Grid>
-    
-                    <Grid item xs={12}>
-                        {isLoading ? (
-                            <Box display="flex" justifyContent="center" alignItems="center">
-                                <CircularProgress />
-                            </Box>
-                        ) : error ? (
-                            <Typography variant="h6" color="error" align="center">
-                                {error}
-                            </Typography>
-                        ) : (
-                            <>
-                                {responseData.length > 0 ? (
-                                    <Grid container spacing={2}>
-                                        {responseData.map(({ id, propertyName }) => (
-                                            <Grid item xs={12} sm={6} md={4} key={id}>
-                                                <Box
-                                                    sx={{
-                                                        padding: 2,
-                                                        borderRadius: 8,
-                                                        border: '1px solid #ddd',
-                                                        boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                                                        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                                                        '&:hover': {
-                                                            transform: 'scale(1.02)',
-                                                            boxShadow: '0 6px 12px rgba(0,0,0,0.2)',
-                                                        }
-                                                    }}
-                                                >
-                                                    <MuiLink 
-                                                        component="button" 
-                                                        variant="body1" 
-                                                        onClick={() => navigate(`/property-details/${id}`)}
-                                                        sx={{
-                                                            display: 'block',
-                                                            textDecoration: 'none',
-                                                            color: 'inherit'
-                                                        }}
-                                                    >
-                                                        <Typography variant="h6" gutterBottom>
-                                                            {propertyName}
-                                                        </Typography>
-                                                    </MuiLink>
-                                                </Box>
-                                            </Grid>
-                                        ))}
-                                    </Grid>
-                                ) : (
-                                    <Typography variant="h6" align="center">
-                                        No properties found.
-                                    </Typography>
-                                )}
-                            </>
-                        )}
-                    </Grid>
-                    
-                   
-                    <Grid item xs={12}>
-                        <Box display="flex" justifyContent="center" mt={2}>
-                            <button onClick={() => navigate('/create-property')}>
-                                Create Property
-                            </button>
-                        </Box>
-                    </Grid>
+        <Container maxWidth="lg">
+            <PageHeader
+                eyebrow="Dashboard"
+                title="Your properties"
+                subtitle={
+                    isLoading
+                        ? "Loading your properties…"
+                        : `${responseData.length} ${responseData.length === 1 ? 'property' : 'properties'} · select one to manage its bookings`
+                }
+                actions={
+                    <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate('/create-property')}>
+                        Create Property
+                    </Button>
+                }
+            />
+
+            {isLoading ? (
+                <LoadingState label="Loading properties" />
+            ) : error ? (
+                <Alert severity="error">{error}</Alert>
+            ) : responseData.length > 0 ? (
+                <Grid container spacing={2.5}>
+                    {responseData.map(({ id, propertyName }) => (
+                        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={id}>
+                            <Card
+                                sx={{
+                                    height: '100%',
+                                    transition: 'border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease',
+                                    '&:hover': {
+                                        borderColor: 'primary.main',
+                                        transform: 'translateY(-2px)',
+                                        boxShadow: (theme) => `0 12px 24px -12px ${alpha(theme.palette.primary.main, 0.4)}`,
+                                    },
+                                    '&:hover .arrow': { transform: 'translateX(4px)', color: 'primary.main' },
+                                }}
+                            >
+                                <CardActionArea
+                                    onClick={() => navigate(`/property-details/${id}`)}
+                                    sx={{ height: '100%', p: 2.5, display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'flex-start' }}
+                                >
+                                    <Avatar
+                                        variant="rounded"
+                                        sx={(theme) => ({
+                                            width: 48,
+                                            height: 48,
+                                            borderRadius: 3,
+                                            bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                            color: 'primary.main',
+                                        })}
+                                    >
+                                        <ApartmentIcon />
+                                    </Avatar>
+                                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                                        <Typography variant="h6" noWrap title={propertyName}>
+                                            {propertyName}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            View bookings
+                                        </Typography>
+                                    </Box>
+                                    <ArrowForwardIcon
+                                        className="arrow"
+                                        fontSize="small"
+                                        sx={{ color: 'text.secondary', transition: 'transform 0.2s ease, color 0.2s ease' }}
+                                    />
+                                </CardActionArea>
+                            </Card>
+                        </Grid>
+                    ))}
                 </Grid>
-            </Container>
-            <ToastContainer autoClose={1500} /> 
-        </div>
+            ) : (
+                <EmptyState
+                    icon={<ApartmentIcon fontSize="large" />}
+                    title="No properties yet"
+                    description="Create your first property to start tracking its bookings."
+                    action={
+                        <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate('/create-property')}>
+                            Create Property
+                        </Button>
+                    }
+                />
+            )}
+        </Container>
     );
 
 };

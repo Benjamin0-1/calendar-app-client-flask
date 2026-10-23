@@ -1,14 +1,15 @@
-import React, {useState, useEffect} from "react";
-import { Typography, Container, Grid, CircularProgress, Box, Button, 
+import {useState, useEffect} from "react";
+import { Typography, Container, CircularProgress, Box, Button, Card, CardContent, Stack,
     TextField, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 import FetchWithAuth from "../../utils/FetchWithAuthentication";
+import PageHeader from '../../components/PageHeader';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-function CreateProperty() {
+// `embedded` renders just the form, for use inside another page's dialog.
+function CreateProperty({ embedded = false }) {
     const [propertyName, setPropertyName] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -63,44 +64,58 @@ function CreateProperty() {
         //etchDetails(e.target.value);
     };
 
-    // JSX here, must be responsive for mobile.
-
-    return (
-        <Container maxWidth="sm">
-            <ToastContainer />
-            <Typography variant="h4" component="h1" gutterBottom>
-                Create New Property
-            </Typography>
-            
-            <Box
-                sx={{
-                    marginBottom: 3,
-                    padding: 2,
-                    borderRadius: 2,
-                    boxShadow: 3,
-                    backgroundColor: '#'
-                }}
-            >
+    const form = (
+        <Box
+            component="form"
+            onSubmit={(e) => {
+                e.preventDefault();
+                handleCreateProperty();
+            }}
+        >
+            <Stack spacing={2.5}>
                 <TextField
                     fullWidth
+                    autoFocus
                     label="Property Name"
+                    placeholder="e.g. Lakeside Hall"
                     variant="outlined"
                     value={propertyName}
                     onChange={handleChange}
-                    margin="normal"
                     error={!!error}
-                    helperText={error}
+                    helperText={error || "Use a name you'll recognise at a glance — you can book dates for it right after."}
                 />
                 <Button
+                    type="submit"
                     variant="contained"
                     color="primary"
-                    onClick={handleCreateProperty}
+                    size="large"
                     disabled={isLoading}
                     fullWidth
                 >
-                    {isLoading ? <CircularProgress size={24} /> : "Create Property"}
+                    {isLoading ? <CircularProgress size={24} color="inherit" /> : "Create Property"}
                 </Button>
-            </Box>
+            </Stack>
+        </Box>
+    );
+
+    if (embedded) {
+        return <Box sx={{ pt: 1 }}>{form}</Box>;
+    }
+
+    return (
+        <Container maxWidth="sm">
+            <PageHeader
+                backTo="/home"
+                backLabel="All properties"
+                title="Create a property"
+                subtitle="Add a venue or rental you want to track bookings for."
+            />
+
+            <Card>
+                <CardContent sx={{ p: { xs: 3, sm: 4 }, '&:last-child': { pb: { xs: 3, sm: 4 } } }}>
+                    {form}
+                </CardContent>
+            </Card>
 
             <Dialog
                 open={dialogOpen}
